@@ -1,0 +1,44 @@
+.login-panel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(45deg, #6ab1e7, #5ee36f);
+  overflow: hidden;
+}
+
+.container {
+  position: relative;
+  width: 800px;
+  height: 500px;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  backdrop-filter: blur(10px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-switch {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}
+
+.switch-Btn {
+  padding: 10px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: 0.3s;
+  text-decoration: none;
+}
+.switch-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

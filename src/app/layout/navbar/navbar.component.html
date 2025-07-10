@@ -1,0 +1,23 @@
+<header class="admin-header">
+  <div class="logo-container">
+    <div class="admin-logo">航泰</div>
+    <h1>航泰砂布有限公司 後台管理系統</h1>
+  </div>
+  <div class="admin-nav">
+    <a href="#" class="admin-nav-link">儀表板</a>
+    <a href="#" class="admin-nav-link active">產品管理</a>
+    <a href="#" class="admin-nav-link">最新消息</a>
+    <a href="#" class="admin-nav-link">設定</a>
+    <div class="admin-user" onclick="toggleUserDropdown()">
+      <div class="admin-avatar">管</div>
+      <span>管理員</span>
+      <i class="fas fa-chevron-down"></i>
+      <div class="user-dropdown" id="userDropdown">
+        <a href="javascript:void(0)" class="dropdown-item" onclick="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          登出
+        </a>
+      </div>
+    </div>
+  </div>
+</header>

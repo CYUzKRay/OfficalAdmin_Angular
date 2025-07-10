@@ -1,0 +1,17 @@
+<div class="login-panel">
+  <div class="container">
+    <div class="login-switch">
+      <a
+        class="switch-Btn"
+        [routerLink]="['login']"
+        (click)="showLogin()"
+        *ngIf="!isLoginBtn"
+        >登入</a
+      >
+      <a class="switch-Btn" *ngIf="false">註冊</a>
+    </div>
+    <div>
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>
