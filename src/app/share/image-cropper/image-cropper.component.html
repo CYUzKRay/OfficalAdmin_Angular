@@ -1,0 +1,141 @@
+<div class="image-cropper">
+  <!-- 圖片上傳區域 -->
+  <div
+    class="upload-area"
+    (click)="openFileDialog()"
+    (dragover)="onDragOver($event)"
+    (dragleave)="onDragLeave($event)"
+    (drop)="onDrop($event)"
+    [class.has-image]="selectedImageUrl"
+  >
+    <div class="upload-icon">
+      <i class="fas fa-cloud-upload-alt"></i>
+    </div>
+    <div class="upload-text">點擊或拖拽圖片到此處上傳</div>
+    <div class="upload-hint" *ngIf="showUploadHint">
+      支援 JPG、PNG、GIF 格式<span *ngIf="recommendedSize"
+        >，建議尺寸 {{ recommendedSize }}</span
+      >
+    </div>
+    <input
+      type="file"
+      #fileInput
+      [accept]="acceptedFormats"
+      style="display: none"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  <!-- 圖片裁剪區域 -->
+  <div class="crop-container" #cropContainer *ngIf="selectedImageUrl">
+    <div class="crop-wrapper">
+      <img
+        #cropImage
+        [src]="selectedImageUrl"
+        alt="裁剪圖片"
+        style="max-width: 100%; height: auto; display: block"
+      />
+      <div
+        class="crop-overlay"
+        #cropOverlay
+        (mousedown)="startDrag($event)"
+        *ngIf="isImageLoaded"
+      >
+        <!-- 調整手柄 -->
+        <div
+          class="crop-handle top-left"
+          (mousedown)="startResize($event, 'top-left')"
+        ></div>
+        <div
+          class="crop-handle top-center"
+          (mousedown)="startResize($event, 'top-center')"
+        ></div>
+        <div
+          class="crop-handle top-right"
+          (mousedown)="startResize($event, 'top-right')"
+        ></div>
+        <div
+          class="crop-handle left-center"
+          (mousedown)="startResize($event, 'left-center')"
+        ></div>
+        <div
+          class="crop-handle right-center"
+          (mousedown)="startResize($event, 'right-center')"
+        ></div>
+        <div
+          class="crop-handle bottom-left"
+          (mousedown)="startResize($event, 'bottom-left')"
+        ></div>
+        <div
+          class="crop-handle bottom-center"
+          (mousedown)="startResize($event, 'bottom-center')"
+        ></div>
+        <div
+          class="crop-handle bottom-right"
+          (mousedown)="startResize($event, 'bottom-right')"
+        ></div>
+      </div>
+    </div>
+
+    <!-- 比例控制按鈕 -->
+    <div class="crop-controls" *ngIf="showRatioButtons">
+      <button
+        type="button"
+        class="ratio-btn"
+        [class.active]="isRatioActive('free')"
+        (click)="setRatio('free')"
+      >
+        自由裁剪
+      </button>
+      <button
+        type="button"
+        class="ratio-btn"
+        [class.active]="isRatioActive('16:9')"
+        (click)="setRatio('16:9')"
+      >
+        16:9
+      </button>
+      <button
+        type="button"
+        class="ratio-btn"
+        [class.active]="isRatioActive('4:3')"
+        (click)="setRatio('4:3')"
+      >
+        4:3
+      </button>
+      <button
+        type="button"
+        class="ratio-btn"
+        [class.active]="isRatioActive('1:1')"
+        (click)="setRatio('1:1')"
+      >
+        1:1
+      </button>
+    </div>
+
+    <!-- 操作按鈕 -->
+    <div class="crop-actions">
+      <button
+        type="button"
+        class="apply-crop-btn"
+        (click)="applyCrop()"
+        [disabled]="!isImageLoaded"
+      >
+        <i class="fas fa-crop"></i>
+        應用裁剪
+      </button>
+      <button type="button" class="clear-btn" (click)="clearImage()">
+        <i class="fas fa-trash"></i>
+        清除圖片
+      </button>
+    </div>
+  </div>
+
+  <!-- 裁剪結果預覽 -->
+  <div class="crop-result" *ngIf="croppedImage">
+    <h4>裁剪結果預覽</h4>
+    <div class="result-preview">
+      <img [src]="croppedImage" alt="裁剪結果" />
+    </div>
+  </div>
+</div>

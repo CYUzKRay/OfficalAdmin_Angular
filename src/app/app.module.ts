@@ -14,7 +14,6 @@ import { LoginIndexComponent } from './login/login-index.component';
     NavbarComponent,
     SidebarComponent,
     MainComponent,
-
     LoginIndexComponent,
   ],
   imports: [BrowserModule, AppRoutingModule],

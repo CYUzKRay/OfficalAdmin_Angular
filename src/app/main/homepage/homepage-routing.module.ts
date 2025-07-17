@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { HomepageComponent } from './homepage.component';
 import { ManageComponent } from './manage/manage.component';
 import { AddComponent } from './add/add.component';
+import { PreviewEffectComponent } from './preview-effect/preview-effect.component';
 
 const routes: Routes = [
   {
@@ -11,7 +12,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'manage',
+        redirectTo: '',
         pathMatch: 'full',
       },
       {
@@ -21,6 +22,10 @@ const routes: Routes = [
       {
         path: 'add',
         component: AddComponent,
+      },
+      {
+        path: 'preview',
+        component: PreviewEffectComponent,
       },
     ],
   },

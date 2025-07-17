@@ -1,1 +1,377 @@
-<p>manage works!</p>
+<div class="admin-container">
+  <!-- 頁面內容 -->
+  <div class="admin-content">
+    <!-- 橫幅輪播圖管理 -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>首頁橫幅輪播圖管理</h2>
+        <button class="add-btn" [routerLink]="'../add'">新增輪播圖</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>序號</th>
+              <th>預覽圖</th>
+              <th>標題</th>
+              <th>描述</th>
+              <th>排序</th>
+              <th>啟用狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="首頁輪播圖1"
+                  class="preview-img"
+                />
+              </td>
+              <td>專業砂布解決方案</td>
+              <td>提供高品質砂布產品，滿足您的各種研磨需求</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="首頁輪播圖2"
+                  class="preview-img"
+                />
+              </td>
+              <td>最新環保砂布系列上市</td>
+              <td>效能與環保並重的全新產品</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="首頁輪播圖3"
+                  class="preview-img"
+                />
+              </td>
+              <td>客製化服務</td>
+              <td>依需求提供最適合您的產品</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge inactive">停用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 產品區塊管理 -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>產品區塊圖片管理</h2>
+        <button class="add-btn">新增產品區塊</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>序號</th>
+              <th>預覽圖</th>
+              <th>產品類別</th>
+              <th>描述</th>
+              <th>排序</th>
+              <th>啟用狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="砂布產品"
+                  class="preview-img"
+                />
+              </td>
+              <td>砂布產品</td>
+              <td>專業研磨砂布，適用於各種金屬、木材、塑膠等材料</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="砂紙產品"
+                  class="preview-img"
+                />
+              </td>
+              <td>砂紙產品</td>
+              <td>多種規格砂紙，從粗磨到精細拋光</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="砂布環帶"
+                  class="preview-img"
+                />
+              </td>
+              <td>砂布環帶</td>
+              <td>適用於各種金屬、木材、塑料等材料的表面處理</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 應用領域管理 -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>應用領域圖片管理</h2>
+        <button class="add-btn">新增應用領域</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>序號</th>
+              <th>預覽圖</th>
+              <th>應用名稱</th>
+              <th>排序</th>
+              <th>啟用狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="工業應用"
+                  class="preview-img"
+                />
+              </td>
+              <td>工業應用</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="木工應用"
+                  class="preview-img"
+                />
+              </td>
+              <td>木工應用</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="金屬加工"
+                  class="preview-img"
+                />
+              </td>
+              <td>金屬加工</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td>
+                <img
+                  src="/api/placeholder/100/60"
+                  alt="汽車製造"
+                  class="preview-img"
+                />
+              </td>
+              <td>汽車製造</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 新增/編輯輪播圖彈窗 -->
+<div class="modal" id="carouselModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>編輯輪播圖</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="edit-form">
+        <div class="form-group">
+          <label for="carousel-title">標題</label>
+          <input type="text" id="carousel-title" placeholder="輸入標題" />
+        </div>
+        <div class="form-group">
+          <label for="carousel-description">描述文字</label>
+          <textarea
+            id="carousel-description"
+            placeholder="輸入描述文字"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label for="carousel-image">圖片</label>
+          <div class="image-upload">
+            <input type="file" id="carousel-image" accept="image/*" />
+            <div class="preview-container">
+              <img
+                src="/api/placeholder/300/150"
+                alt="預覽圖"
+                id="image-preview"
+              />
+            </div>
+            <button type="button" class="upload-btn">選擇圖片</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="carousel-status">狀態</label>
+          <select id="carousel-status">
+            <option value="1">啟用</option>
+            <option value="0">停用</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">取消</button>
+          <button type="submit" class="save-btn">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

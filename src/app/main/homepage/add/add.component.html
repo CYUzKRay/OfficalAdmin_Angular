@@ -1,1 +1,172 @@
-<p>add works!</p>
+<!-- 主要內容 -->
+<main class="admin-content">
+  <!-- 編輯器布局 -->
+  <div class="editor-layout">
+    <!-- 左側：編輯區域 -->
+    <div class="edit-panel">
+      <h2 class="panel-title" id="editPanelTitle">
+        <i class="fas fa-edit"></i>
+        圖片編輯
+      </h2>
+
+      <!-- 圖片上傳 -->
+      <!-- <div class="upload-area" id="uploadArea" (click)="OpenFileUpload()">
+        <div class="upload-icon">
+          <i class="fas fa-cloud-upload-alt"></i>
+        </div>
+        <div class="upload-text">點擊或拖拽圖片到此處上傳</div>
+        <div class="upload-hint">
+          支援 JPG、PNG、GIF 格式，建議尺寸 1920x800px
+        </div>
+        <input
+          type="file"
+          #file
+          accept="image/*"
+          style="display: none"
+          (change)="onFileSelected($event)"
+        />
+      </div> -->
+
+      <!-- 圖片裁剪 -->
+      <!-- <div class="crop-container" id="cropContainer" *ngIf="selectedImageUrl">
+        <div class="crop-wrapper">
+          <img id="cropImage" [src]="selectedImageUrl" alt="裁剪圖片" />
+          <div class="crop-overlay" id="cropOverlay">
+            <div class="crop-handle top-left"></div>
+            <div class="crop-handle top-center"></div>
+            <div class="crop-handle top-right"></div>
+            <div class="crop-handle left-center"></div>
+            <div class="crop-handle right-center"></div>
+            <div class="crop-handle bottom-left"></div>
+            <div class="crop-handle bottom-center"></div>
+            <div class="crop-handle bottom-right"></div>
+          </div>
+        </div>
+
+        <div class="crop-controls">
+          <button class="ratio-btn active" data-ratio="free">自由裁剪</button>
+          <button class="ratio-btn" data-ratio="16:9">16:9</button>
+          <button class="ratio-btn" data-ratio="4:3">4:3</button>
+          <button class="ratio-btn" data-ratio="1:1">1:1</button>
+        </div>
+
+        <button class="apply-crop-btn" id="applyCropBtn">
+          <i class="fas fa-crop"></i>
+          應用裁剪到預覽
+        </button>
+      </div> -->
+
+      <!-- 輪播資訊表單 -->
+      <form id="carouselForm">
+        <div class="form-group">
+          <label for="slideTitle"> 標題 <span class="required">*</span> </label>
+          <input
+            type="text"
+            id="slideTitle"
+            name="title"
+            placeholder="請輸入輪播圖標題"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="slideLink">連結網址</label>
+          <input
+            type="text"
+            id="slideLink"
+            name="link"
+            placeholder="https://example.com"
+          />
+        </div>
+      </form>
+    </div>
+
+    <!-- 右側：預覽區域 -->
+    <div class="preview-panel">
+      <h2 class="panel-title">
+        <i class="fas fa-eye"></i>
+        輪播預覽
+      </h2>
+
+      <!-- 輪播預覽容器 -->
+      <div class="carousel-preview" id="carouselPreview">
+        <div class="carousel-slide active">
+          <div class="empty-preview" id="emptyPreview">
+            <i class="fas fa-image"></i>
+            <div>請上傳圖片並應用裁剪</div>
+            <img id="cropImage" [src]="selectedImageUrl" alt="裁剪圖片" />
+          </div>
+          <div
+            class="carousel-content"
+            id="carouselContent"
+            style="display: none"
+          >
+            <div class="carousel-title">請輸入標題</div>
+          </div>
+        </div>
+
+        <!-- 輪播控制 -->
+        <button
+          class="carousel-controls carousel-prev"
+          id="carouselPrev"
+          style="display: none"
+        >
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button
+          class="carousel-controls carousel-next"
+          id="carouselNext"
+          style="display: none"
+        >
+          <i class="fas fa-chevron-right"></i>
+        </button>
+
+        <!-- 輪播指示器 -->
+        <div
+          class="carousel-indicators"
+          id="carouselIndicators"
+          style="display: none"
+        >
+          <!-- 指示器會動態生成 -->
+        </div>
+      </div>
+
+      <!-- 設備預覽 -->
+      <div class="device-preview">
+        <button class="device-btn active" data-device="desktop">
+          <i class="fas fa-desktop"></i>
+          桌面版
+        </button>
+        <button class="device-btn" data-device="tablet">
+          <i class="fas fa-tablet-alt"></i>
+          平板
+        </button>
+        <button class="device-btn" data-device="mobile">
+          <i class="fas fa-mobile-alt"></i>
+          手機
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 操作按鈕 -->
+  <div class="form-actions">
+    <button type="button" class="btn btn-outline">
+      <i class="fas fa-times"></i>
+      取消
+    </button>
+    <button
+      type="button"
+      class="btn btn-primary"
+      id="previewBtn"
+      (click)="Change()"
+    >
+      <i class="fas fa-eye"></i>
+      預覽效果
+    </button>
+    <button type="submit" class="btn btn-success" id="saveBtn">
+      <i class="fas fa-save"></i>
+      <span id="saveBtnText">儲存設定</span>
+    </button>
+  </div>
+</main>
