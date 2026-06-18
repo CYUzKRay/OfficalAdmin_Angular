@@ -5,17 +5,11 @@ import { NewspageRoutingModule } from './newspage-routing.module';
 import { NewspageComponent } from './newspage.component';
 import { ManageComponent } from './manage/manage.component';
 import { AddComponent } from './add/add.component';
-
+import { ShareModule } from 'src/app/share/share.module';
+import { PreviewComponent } from './preview/preview.component';
 
 @NgModule({
-  declarations: [
-    NewspageComponent,
-    ManageComponent,
-    AddComponent
-  ],
-  imports: [
-    CommonModule,
-    NewspageRoutingModule
-  ]
+  declarations: [NewspageComponent, ManageComponent, AddComponent, PreviewComponent],
+  imports: [CommonModule, NewspageRoutingModule, ShareModule],
 })
-export class NewspageModule { }
+export class NewspageModule {}

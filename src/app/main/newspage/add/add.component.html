@@ -1,1 +1,144 @@
-<p>add works!</p>
+<div class="admin-container">
+  <!-- 主要內容 -->
+  <main class="admin-content">
+    <!-- 表單容器 -->
+    <div class="form-container">
+      <form id="newsForm">
+        <!-- 基本資訊 -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-info-circle"></i>
+            基本資訊
+          </h2>
+
+          <div class="form-row">
+            <div class="form-group col-8">
+              <label for="newsTitle">
+                消息標題 <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="newsTitle"
+                name="title"
+                placeholder="請輸入消息標題"
+                [(ngModel)]="uploadata.title"
+                required
+              />
+              <div class="form-help">標題將顯示在列表頁面和詳細頁面</div>
+            </div>
+
+            <div class="form-group col-4">
+              <label for="newsCategory">
+                消息分類 <span class="required">*</span>
+              </label>
+              <select
+                id="newsCategory"
+                name="category"
+                [(ngModel)]="uploadata.classification"
+                required
+              >
+                <option value="">請選擇分類</option>
+                <option value="公司消息">公司消息</option>
+                <option value="產品資訊" selected>產品資訊</option>
+                <option value="活動通知">活動通知</option>
+                <option value="媒體報導">媒體報導</option>
+              </select>
+            </div>
+
+            <div class="form-group col-8">
+              <label for="newsIntroduction">
+                簡介 <span class="required">*</span>
+              </label>
+              <input
+                type="text"
+                id="newsIntroduction"
+                name="introduction"
+                placeholder="請輸入簡介"
+                [(ngModel)]="uploadata.introduction"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group col-4">
+              <label for="publishDate">發布日期</label>
+              <input
+                type="date"
+                id="publishDate"
+                name="publish_date"
+                [(ngModel)]="uploadata.date"
+              />
+              <div class="form-help">留空將使用當前日期</div>
+            </div>
+
+            <div class="form-group col-4">
+              <label for="displayStatus">顯示狀態</label>
+              <div class="status-toggle">
+                <div class="toggle-switch active" id="statusToggle">
+                  <div class="toggle-slider"></div>
+                </div>
+                <span class="status-label active" id="statusLabel">已發布</span>
+              </div>
+              <input type="hidden" id="statusValue" name="status" value="1" />
+              <div class="form-help">控制消息是否在前台顯示</div>
+            </div>
+
+            <div class="form-group col-4">
+              <button class="btn" (click)="OpenModal()">
+                <i>📝</i> 開啟圖片選擇彈窗
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 內容編輯區域 -->
+        <div class="form-section">
+          <h2 class="section-title">
+            <i class="fas fa-edit"></i>
+            消息內容
+          </h2>
+
+          <div class="form-group">
+            <app-editor
+              [(ngModel)]="uploadata.newContent"
+              [ngModelOptions]="{standalone: true}"
+            ></app-editor>
+
+            <div class="form-help">
+              使用富文本編輯器編寫消息內容，支援圖片、表格、列表等多種格式
+            </div>
+          </div>
+        </div>
+
+        <!-- 表單操作按鈕 -->
+        <div class="form-actions">
+          <button type="button" class="btn btn-outline" (click)="Cancel()">
+            <i class="fas fa-times"></i>
+            取消
+          </button>
+          <button type="submit" class="btn btn-success" (click)="SaveDraft()">
+            <i class="fas fa-check"></i>
+            儲存並發布
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+</div>
+
+<!-- 彈窗 -->
+<div id="myModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>彈窗標題</h3>
+      <button class="close-btn" (click)="CloseModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <app-picture-manage
+        (imageUrlResult)="GetImageUrl($event)"
+      ></app-picture-manage>
+    </div>
+  </div>
+</div>
+<app-loading *ngIf="isFinish"> </app-loading>

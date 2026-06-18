@@ -1,0 +1,41 @@
+/* --- news 專用 / 覆蓋規則 --- */
+
+/* 覆蓋：news 列表頁要有固定內容寬度 */
+.admin-container {
+  max-width: 1200px;
+}
+
+/* 覆蓋：news 發佈按鈕用成功色系（style.css 中是主色） */
+.publish-btn {
+  background-color: var(--success-color);
+  color: var(--white);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.publish-btn:hover {
+  background-color: #3d8b40; /* success 深色：可依需要改為 HSL 變化 */
+}
+
+/* 新增：news 列表的標題/節錄樣式 */
+.news-title-cell {
+  max-width: 300px;
+}
+
+.news-title {
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: var(--accent-color);
+}
+
+.news-excerpt {
+  font-size: 13px;
+  color: var(--muted-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}

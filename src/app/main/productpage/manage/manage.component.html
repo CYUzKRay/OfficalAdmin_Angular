@@ -1,1 +1,506 @@
-<p>manage works!</p>
+<div class="admin-container">
+  <div class="admin-header">
+    <h1>產品與分類管理</h1>
+    <div class="page-title">管理官方網站的產品分類架構與詳細產品資訊</div>
+  </div>
+
+  <div class="admin-content">
+    <div class="content-section">
+      <div class="section-header">
+        <h2>主分類管理</h2>
+        <button class="add-btn" (click)="openCategoryModal('main')">
+          新增主分類
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="10%">序號</th>
+              <th width="40%">主分類名稱</th>
+              <th width="20%">排序</th>
+              <th width="15%">狀態</th>
+              <th width="15%">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of mainCategory">
+              <td>{{ category.index }}</td>
+              <td>
+                <strong>{{ category.name }}</strong>
+              </td>
+              <td>
+                <div class="order-control">
+                  <button
+                    class="order-btn up-btn"
+                    title="上移"
+                    (click)="editCategorySort('main', 'up', category)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    class="order-btn down-btn"
+                    title="下移"
+                    (click)="editCategorySort('main', 'down', category)"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div
+                  class="status-badge"
+                  [ngClass]="category.status ? 'active' : 'inactive'"
+                >
+                  {{ category.status ? "啟用" : "隱藏" }}
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn" (click)="editMainCategory(category)">
+                    編輯
+                  </button>
+                  <button
+                    class="delete-btn"
+                    (click)="removeCategory(category, 'main')"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="content-section">
+      <div class="section-header">
+        <h2>次分類管理</h2>
+        <button class="add-btn" (click)="openCategoryModal('sub')">
+          新增次分類
+        </button>
+      </div>
+
+      <div class="filter-tools">
+        <div class="filter-group" style="max-width: 300px">
+          <label>請選擇主分類 (切換以顯示對應次分類)</label>
+          <select
+            class="form-control"
+            [(ngModel)]="parentCategoryId"
+            (change)="searchSubCategory()"
+          >
+            <option [value]="null" selected>顯示全部</option>
+            <option *ngFor="let item of mainCategory" [value]="item.id">
+              {{ item.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="10%">序號</th>
+              <th width="30%">次分類名稱</th>
+              <th width="20%">所屬主分類</th>
+              <th width="15%">排序 (該主分類下)</th>
+              <th width="10%">狀態</th>
+              <th width="15%">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of subCategory">
+              <td>{{ category.index }}</td>
+              <td>
+                <strong>{{ category.name }}</strong>
+              </td>
+              <td>{{ category.parentName }}</td>
+              <td>
+                <div class="order-control">
+                  <button
+                    class="order-btn up-btn"
+                    (click)="editCategorySort('sub', 'up', category)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    class="order-btn down-btn"
+                    (click)="editCategorySort('sub', 'down', category)"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div
+                  class="status-badge"
+                  [ngClass]="category.status ? 'active' : 'inactive'"
+                >
+                  {{ category.status ? "啟用" : "隱藏" }}
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button
+                    class="edit-btn"
+                    (click)="editMainCategoryModal(category, 'sub')"
+                  >
+                    編輯
+                  </button>
+                  <button
+                    class="delete-btn"
+                    (click)="removeCategory(category, 'sub')"
+                  >
+                    刪除
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="content-section">
+      <div class="section-header">
+        <h2>產品列表管理</h2>
+        <button class="add-btn">新增產品</button>
+      </div>
+
+      <div class="filter-tools">
+        <div class="filter-group">
+          <label>主/次分類篩選</label>
+          <select class="form-control">
+            <option value="all">全部分類</option>
+            <optgroup label="砂布">
+              <option value="sub1">陶瓷砂布產品</option>
+              <option value="sub2">軟 / 半硬布環帶</option>
+            </optgroup>
+            <optgroup label="其他研磨產品">
+              <option value="sub3">砂輪</option>
+              <option value="sub4">拋光膏</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label>產品狀態</label>
+          <select class="form-control">
+            <option value="all">全部狀態</option>
+            <option value="active">上架中</option>
+            <option value="inactive">已下架</option>
+          </select>
+        </div>
+        <div class="filter-group" style="flex: 2">
+          <label>關鍵字搜尋</label>
+          <div class="search-box">
+            <input type="text" placeholder="輸入產品名稱或型號..." />
+            <button class="search-btn">搜尋</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>預覽圖</th>
+              <th>產品名稱</th>
+              <th>所屬分類</th>
+              <th>規格 / 型號</th>
+              <th>銷售類型</th>
+              <th>排序</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <img />
+              </td>
+              <td><strong>NCA 陶瓷砂布環帶</strong></td>
+              <td>砂布 > 陶瓷砂布產品</td>
+              <td>特製高磨削力規格</td>
+              <td>客製化訂製</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">上架中</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <img src="" alt="半硬布環帶" class="preview-img" />
+              </td>
+              <td><strong>半硬布環帶</strong></td>
+              <td>砂布 > 軟 / 半硬布環帶</td>
+              <td>TF32 / TR62</td>
+              <td>客製化訂製</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td><div class="status-badge active">上架中</div></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn">編輯</button>
+                  <button class="delete-btn">刪除</button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="page-btn" disabled>&lt;</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <button class="page-btn">&gt;</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<app-modal
+  [isOpen]="isCategoryModalOpen"
+  [title]="categoryModalTitle"
+  (closeModal)="closeCategoryModal()"
+>
+  <div class="edit-form">
+    <div class="form-group" *ngIf="categoryType === 'sub'">
+      <label class="form-label required">所屬主分類</label>
+      <select class="form-control" [(ngModel)]="newCategoryData.parentId">
+        <option *ngFor="let item of mainCategory" [value]="item.id">
+          {{ item.name }}
+        </option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label required">
+        {{ categoryType === "main" ? "主" : "次" }}分類名稱</label
+      >
+      <input
+        type="text"
+        class="form-control"
+        [placeholder]="
+          '輸入' + (categoryType === 'main' ? '主' : '次') + '分類名稱'
+        "
+        [(ngModel)]="newCategoryData.name"
+        name="categoryName"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">狀態</label>
+      <select class="form-control" [(ngModel)]="newCategoryData.status">
+        <option [ngValue]="true">啟用</option>
+        <option [ngValue]="false">停用</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label required">分類介紹</label>
+      <input
+        type="text"
+        class="form-control"
+        [placeholder]="'分類介紹'"
+        [(ngModel)]="newCategoryData.introduction"
+      />
+    </div>
+
+    <div class="form-actions">
+      <button type="button" class="cancel-btn" (click)="closeCategoryModal()">
+        取消
+      </button>
+      <button type="submit" class="save-btn" (click)="submitCategoryData()">
+        儲存
+      </button>
+    </div>
+  </div>
+</app-modal>
+
+<!-- <div class="modal" id="mainCategoryModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>編輯主分類</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="edit-form">
+        <div class="form-group">
+          <label class="form-label required">主分類名稱</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="輸入主分類名稱 (如：砂布)"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">狀態</label>
+          <select class="form-control">
+            <option value="1">啟用</option>
+            <option value="0">停用</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">取消</button>
+          <button type="submit" class="save-btn">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="subCategoryModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h3>編輯次分類</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="edit-form">
+        <div class="form-group">
+          <label class="form-label required">所屬主分類</label>
+          <select class="form-control">
+            <option value="">請選擇主分類...</option>
+            <option value="sandpaper">砂布</option>
+            <option value="other">其他研磨產品</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">次分類名稱</label>
+          <input
+            type="text"
+            class="form-control"
+            placeholder="輸入次分類名稱"
+          />
+        </div>
+        <div class="form-group">
+          <label class="form-label">狀態</label>
+          <select class="form-control">
+            <option value="1">啟用</option>
+            <option value="0">停用</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">取消</button>
+          <button type="submit" class="save-btn">儲存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="productModal">
+  <div class="modal-content modal-lg">
+    <div class="modal-header">
+      <h3>編輯產品資訊</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="modal-body">
+      <form class="edit-form">
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label class="form-label required">產品名稱</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="輸入產品名稱"
+            />
+          </div>
+          <div class="form-group col-6">
+            <label class="form-label required">所屬次分類</label>
+            <select class="form-control">
+              <option value="">請選擇分類...</option>
+              <optgroup label="砂布">
+                <option value="1">陶瓷砂布產品</option>
+                <option value="2">軟 / 半硬布環帶</option>
+              </optgroup>
+              <optgroup label="其他研磨產品">
+                <option value="3">砂輪</option>
+                <option value="4">拋光膏</option>
+              </optgroup>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group col-6">
+            <label class="form-label">規格 / 型號</label>
+            <input
+              type="text"
+              class="form-control"
+              placeholder="輸入規格型號"
+            />
+          </div>
+          <div class="form-group col-6">
+            <label class="form-label required">銷售類型</label>
+            <select class="form-control">
+              <option value="price">固定/區間價格 (如: NT$37 ~ NT$45)</option>
+              <option value="custom">客製化訂製 (詢價)</option>
+            </select>
+            <div
+              class="price-inputs"
+              style="display: flex; gap: 10px; margin-top: 10px"
+            >
+              <input type="text" class="form-control" placeholder="最低價" />
+              <span style="line-height: 38px">~</span>
+              <input type="text" class="form-control" placeholder="最高價" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label required">產品主要圖片</label>
+          <div class="image-upload">
+            <div class="preview-container">
+              <img src="/api/placeholder/300/200" alt="預覽圖" />
+            </div>
+            <button type="button" class="upload-btn">選擇圖片</button>
+            <div class="image-help">
+              建議尺寸：800x600px，檔案大小不超過 2MB
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">產品描述 (前端顯示文字)</label>
+          <textarea
+            class="form-control"
+            placeholder="輸入產品介紹敘述..."
+            style="height: 100px"
+          ></textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">上架狀態</label>
+          <select class="form-control" style="width: 200px">
+            <option value="1">上架中 (顯示於前台)</option>
+            <option value="0">已下架 (隱藏)</option>
+          </select>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-btn">取消</button>
+          <button type="submit" class="save-btn">儲存產品</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div> -->

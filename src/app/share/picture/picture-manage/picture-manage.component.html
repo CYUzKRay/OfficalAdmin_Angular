@@ -1,0 +1,94 @@
+<div class="container">
+  <div class="upload-section">
+    <div class="upload-header">
+      <div class="input-group">
+        <input
+          type="text"
+          id="photoTitle"
+          placeholder="輸入圖片標題"
+          [(ngModel)]="title"
+        />
+      </div>
+
+      <select
+        class="picture-group"
+        id="newsCategory"
+        name="category"
+        [(ngModel)]="selectDirectory"
+      >
+        <option *ngFor="let directory of directories">
+          {{ directory }}
+        </option>
+      </select>
+
+      <button class="upload-btn" (click)="triggerFileUpload()">
+        按鈕點擊後上傳
+      </button>
+    </div>
+    <div class="preview-area" id="previewArea" (click)="uploadPreviewImage()">
+      <div class="preview-placeholder">待上傳預覽圖</div>
+    </div>
+    <input
+      type="file"
+      #fileInput
+      accept="images/*"
+      style="display: none"
+      (change)="onFileSelected($event)"
+    />
+  </div>
+
+  <div class="gallery-header">
+    <h2 class="gallery-title">圖片庫</h2>
+
+    <div>
+      <select
+        class="picture-group"
+        id="newsCategory"
+        name="category"
+        [(ngModel)]="selectImagesDirectory"
+        (change)="changePhotos()"
+      >
+        <option *ngFor="let image of images">
+          {{ image.directory }}
+        </option>
+      </select>
+      <button
+        class="delete-selected-btn"
+        id="deleteSelectedBtn"
+        (click)="deleteSelected()"
+      >
+        刪除
+      </button>
+    </div>
+  </div>
+
+  <div class="gallery-grid" id="galleryGrid">
+    <div class="empty-state" *ngIf="selectImages.length == 0">
+      <div class="empty-state-icon">📷</div>
+      <div>尚未上傳任何圖片</div>
+    </div>
+
+    <div class="photo-card" *ngFor="let photo of selectImages">
+      <input type="checkbox" class="card-checkbox" />
+      <div class="photo-wrapper" onclick="">
+        <img [src]="photo.smallImageUrl" />
+        <div class="copy-overlay" (click)="copyPhotoUrl(photo)">
+          點擊複製網址
+        </div>
+      </div>
+      <div class="card-info">
+        <div class="card-title">{{ photo.imageName }}</div>
+        <div class="card-actions">
+          <button class="card-btn copy-btn" (click)="copyPhotoUrl(photo)">
+            複製網址
+          </button>
+          <button class="card-btn delete-btn" (click)="deletePhoto(photo)">
+            刪除
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>

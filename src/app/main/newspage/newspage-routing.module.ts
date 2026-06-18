@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NewspageComponent } from './newspage.component';
 import { ManageComponent } from './manage/manage.component';
 import { AddComponent } from './add/add.component';
+import { PreviewComponent } from './preview/preview.component';
 
 const routes: Routes = [
   {
@@ -21,6 +22,14 @@ const routes: Routes = [
       {
         path: 'add',
         component: AddComponent,
+      },
+      {
+        path: 'add/:id',
+        component: AddComponent,
+      },
+      {
+        path: 'preview/:id',
+        component: PreviewComponent,
       },
     ],
   },

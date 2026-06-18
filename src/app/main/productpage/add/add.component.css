@@ -1,0 +1,631 @@
+/* ────────────────────────────────────────
+   頁面容器
+──────────────────────────────────────── */
+.page-wrapper {
+  padding: 0 20px 60px;
+}
+
+.card {
+  margin-top: 20px;
+  border-radius: 8px;
+}
+
+.card-header {
+  background: var(--secondary-color);
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* ────────────────────────────────────────
+   共用小元件
+──────────────────────────────────────── */
+.count-badge {
+  font-size: 12px;
+  background-color: var(--secondary-color);
+  color: var(--accent-color);
+  border: 1px solid var(--primary-color);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 6px;
+}
+
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+}
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: var(--border-color);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: background 0.25s;
+}
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.25s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+.toggle-switch input:checked + .toggle-slider {
+  background: var(--primary-color);
+}
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+}
+
+.sticky-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 0;
+}
+
+/* ────────────────────────────────────────
+   番號管理
+──────────────────────────────────────── */
+.drag-icon-hint {
+  font-size: 14px;
+  color: var(--accent-color);
+}
+
+.grit-thead {
+  display: grid;
+  grid-template-columns: 28px 1fr 160px 36px;
+  gap: 8px;
+  padding: 6px 10px;
+  background-color: var(--secondary-color);
+  border-radius: 4px 4px 0 0;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dark-accent);
+  border: 1px solid var(--border-color);
+  border-bottom: none;
+}
+
+.grit-list {
+  border: 1px solid var(--border-color);
+  border-radius: 0 0 4px 4px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.grit-row {
+  display: grid;
+  grid-template-columns: 28px 1fr 160px 36px;
+  gap: 8px;
+  align-items: center;
+  padding: 8px 10px;
+  background-color: var(--white);
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.15s;
+}
+.grit-row:last-child {
+  border-bottom: none;
+}
+.grit-row:hover {
+  background-color: var(--light-bg);
+}
+.grit-row--error {
+  background-color: rgba(244, 67, 54, 0.03);
+}
+
+.col-drag {
+  display: flex;
+  align-items: center;
+}
+.col-grit {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.col-price {
+  display: flex;
+  align-items: flex-start;
+}
+.col-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drag-handle {
+  cursor: grab;
+  color: var(--muted-color);
+  font-size: 15px;
+  user-select: none;
+  transition: color 0.15s;
+}
+.drag-handle:active {
+  cursor: grabbing;
+}
+.grit-row:hover .drag-handle {
+  color: var(--primary-color);
+}
+
+.grit-input {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 13px;
+  color: var(--text-color);
+  background: var(--white);
+  transition: border-color 0.2s;
+}
+.grit-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+.grit-input.input-error {
+  border-color: var(--danger-color);
+}
+
+.price-input-wrap {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+.price-prefix {
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  border-right: none;
+  border-radius: 4px 0 0 4px;
+  padding: 0 8px;
+  font-size: 12px;
+  color: var(--accent-color);
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.price-input {
+  border-radius: 0 4px 4px 0;
+}
+.price-input::-webkit-outer-spin-button,
+.price-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+}
+.price-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.field-error {
+  font-size: 11px;
+  color: var(--danger-color);
+  padding-left: 2px;
+}
+
+.remove-btn {
+  background: none;
+  border: 1px solid transparent;
+  color: var(--muted-color);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.remove-btn:hover:not(:disabled) {
+  color: var(--danger-color);
+  border-color: var(--danger-color);
+  background: rgba(244, 67, 54, 0.05);
+}
+.remove-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.add-grit-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  background: none;
+  border: 1px dashed var(--primary-color);
+  color: var(--primary-color);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  margin-bottom: 12px;
+}
+.add-grit-btn:hover {
+  background-color: var(--secondary-color);
+}
+
+.grit-placeholder {
+  height: 44px;
+  background: var(--secondary-color);
+  border: 1px dashed var(--primary-color);
+  border-radius: 4px;
+  margin: 2px 0;
+  grid-column: 1 / -1;
+}
+
+.grit-summary {
+  font-size: 12px;
+  color: var(--muted-color);
+  padding: 4px 2px;
+}
+
+/* CDK 番號拖曳預覽 */
+.cdk-drag-preview.grit-row {
+  background: var(--white);
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  opacity: 0.95;
+}
+.cdk-drag-animating {
+  transition: transform 200ms ease;
+}
+
+/* ────────────────────────────────────────
+   圖片上傳
+──────────────────────────────────────── */
+.upload-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(244, 67, 54, 0.06);
+  border: 1px solid var(--danger-color);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--danger-color);
+  margin-bottom: 12px;
+}
+.error-close {
+  background: none;
+  border: none;
+  color: var(--danger-color);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0 2px;
+}
+
+.drop-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color 0.2s,
+    background-color 0.2s;
+  margin-bottom: 16px;
+  background-color: var(--light-bg);
+}
+.drop-zone:hover,
+.drop-zone--over {
+  border-color: var(--primary-color);
+  background-color: var(--secondary-color);
+}
+.drop-zone__inner {
+  pointer-events: none;
+}
+.drop-zone__icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.drop-zone__text {
+  font-size: 14px;
+  color: var(--dark-accent);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+.drop-zone__hint {
+  font-size: 12px;
+  color: var(--muted-color);
+  margin: 0;
+}
+
+/* ── 縮圖列表（nowrap 是 CDK horizontal 正常運作的關鍵）── */
+.thumb-list {
+  display: flex;
+  flex-wrap: nowrap; /* ← 必須 nowrap，wrap 會讓 CDK 位置計算失準 */
+  gap: 12px;
+  margin-bottom: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  min-height: 110px;
+}
+
+.thumb-item {
+  position: relative;
+  flex-shrink: 0; /* ← 防止縮圖被壓縮 */
+  width: 120px;
+  height: 90px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 2px solid var(--border-color);
+  /* 關鍵：停用所有原生拖曳與選取行為 */
+  cursor: grab;
+  user-select: none;
+  -webkit-user-drag: none;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+  background: var(--light-bg);
+}
+.thumb-item:active {
+  cursor: grabbing;
+}
+.thumb-item:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 2px 8px rgba(73, 159, 182, 0.25);
+}
+.thumb-item--main {
+  border-color: var(--primary-color);
+}
+
+.thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* 關鍵：阻止圖片被選取與原生拖曳 */
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.main-label {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--primary-color);
+  color: var(--white);
+  font-size: 11px;
+  text-align: center;
+  padding: 3px 0;
+  pointer-events: none;
+}
+
+.thumb-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.thumb-item:hover .thumb-overlay {
+  opacity: 1;
+}
+
+.thumb-btn {
+  background: rgba(255, 255, 255, 0.92);
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition:
+    background 0.15s,
+    color 0.15s;
+  line-height: 1;
+  /* 按鈕本身要接收點擊，所以不能 pointer-events: none */
+}
+.thumb-btn--star {
+  color: var(--muted-color);
+}
+.thumb-btn--star.is-main,
+.thumb-btn--star:hover {
+  color: #f5a623;
+}
+.thumb-btn--remove:hover {
+  color: var(--danger-color);
+}
+
+.thumb-drag-hint {
+  position: absolute;
+  bottom: 3px;
+  right: 5px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.thumb-item:hover .thumb-drag-hint {
+  opacity: 1;
+}
+
+/* CDK 圖片拖曳預覽 */
+.thumb-placeholder {
+  flex-shrink: 0;
+  width: 120px;
+  height: 90px;
+  border: 2px dashed var(--primary-color);
+  border-radius: 6px;
+  background: var(--secondary-color);
+}
+
+.cdk-drag-preview.thumb-item {
+  border-radius: 6px;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  opacity: 0.95;
+  overflow: hidden;
+  cursor: grabbing;
+}
+
+.thumb-list.cdk-drop-list-dragging .thumb-item:not(.cdk-drag-placeholder) {
+  transition: transform 200ms ease;
+}
+
+.upload-footer {
+  padding-top: 4px;
+}
+.footer-hint {
+  font-size: 12px;
+  color: var(--muted-color);
+}
+
+/* ────────────────────────────────────────
+   批次新增與常用範本
+──────────────────────────────────────── */
+.grit-actions-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.action-btn-secondary {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: none;
+  border: 1px dashed var(--primary-color);
+  color: var(--primary-color);
+  border-radius: 4px;
+  padding: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.action-btn-secondary:hover {
+  background-color: var(--secondary-color);
+  border-style: solid;
+}
+
+/* 批次輸入區塊 */
+.bulk-input-container {
+  background: var(--light-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+.bulk-textarea {
+  resize: vertical;
+  min-height: 80px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.bulk-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.bulk-btn {
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+}
+.bulk-btn--cancel {
+  background: none;
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+.bulk-btn--cancel:hover {
+  background-color: var(--secondary-color);
+}
+.bulk-btn--confirm {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+.bulk-btn--confirm:hover {
+  opacity: 0.9;
+}
+
+/* 常用範本 */
+.preset-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  padding: 12px 0 8px;
+  border-top: 1px dashed var(--border-color);
+  text-align: left;
+}
+.preset-title {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--dark-accent);
+}
+.preset-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.preset-chip {
+  background-color: var(--secondary-color);
+  border: 1px solid var(--border-color);
+  color: var(--accent-color);
+  padding: 4px 10px;
+  border-radius: 16px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.preset-chip:hover {
+  background-color: var(--primary-color);
+  color: var(--white);
+  border-color: var(--primary-color);
+}
+
+/* ────────────────────────────────────────
+   RWD
+──────────────────────────────────────── */
+@media (max-width: 600px) {
+  .grit-thead,
+  .grit-row {
+    grid-template-columns: 28px 1fr 120px 32px;
+  }
+  .thumb-item {
+    width: 100px;
+    height: 75px;
+  }
+  .thumb-placeholder {
+    width: 100px;
+    height: 75px;
+  }
+  .drop-zone {
+    padding: 20px;
+  }
+}

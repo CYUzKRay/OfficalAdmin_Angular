@@ -20,6 +20,7 @@ export interface CropResult {
     width: number;
     height: number;
   };
+  cropImage: Blob | null;
 }
 
 @Component({
@@ -34,13 +35,24 @@ export interface CropResult {
     },
   ],
 })
-export class ImageCropperComponent
-  implements OnInit, OnDestroy, ControlValueAccessor
-{
+export class ImageCropperComponent implements OnInit, OnDestroy {
+  private cropImageRef?: ElementRef;
   @ViewChild('fileInput') fileInputRef!: ElementRef;
-  @ViewChild('cropImage') cropImageRef!: ElementRef;
-  @ViewChild('cropOverlay') cropOverlayRef!: ElementRef;
-  @ViewChild('cropContainer') cropContainerRef!: ElementRef;
+  @ViewChild('cropImage', { static: false })
+  set cropImage(element: ElementRef) {
+    if (element) {
+      console.log('元素已設置:', element.nativeElement);
+      this.cropImageRef = element;
+    }
+  }
+
+  private cropOverlayRef?: ElementRef;
+  @ViewChild('cropOverlay', { static: false })
+  set cropOverlay(element: ElementRef) {
+    if (element) {
+      this.cropOverlayRef = element;
+    }
+  }
 
   // 輸入屬性
   @Input() acceptedFormats: string = 'image/*';
@@ -61,6 +73,10 @@ export class ImageCropperComponent
   uploadedImage: string | null = null;
   croppedImage: string | null = null;
   isImageLoaded: boolean = false;
+
+  // 控制初始化的標誌
+  private needsInitialization: boolean = false;
+  private hasInitialized: boolean = false;
 
   // 裁剪相關變數
   isDragging = false;
@@ -86,17 +102,6 @@ export class ImageCropperComponent
 
   ngOnDestroy() {
     this.removeGlobalEventListeners();
-  }
-
-  // ControlValueAccessor 方法
-  writeValue(value: string | null): void {
-    if (value) {
-      this.selectedImageUrl = value;
-      this.uploadedImage = value;
-      setTimeout(() => {
-        this.initCrop();
-      }, 100);
-    }
   }
 
   registerOnChange(fn: (value: string | null) => void): void {
@@ -171,15 +176,14 @@ export class ImageCropperComponent
     reader.onload = (e: any) => {
       this.uploadedImage = e.target.result;
       this.selectedImageUrl = e.target.result;
-      this.isImageLoaded = false;
-
+      this.isImageLoaded = true;
       if (this.uploadedImage) {
         this.imageUploaded.emit(this.uploadedImage);
       }
 
       setTimeout(() => {
         this.initCrop();
-      }, 100);
+      }, 1000);
     };
 
     reader.onerror = () => {
@@ -220,6 +224,8 @@ export class ImageCropperComponent
   initCrop() {
     if (!this.cropImageRef || !this.cropOverlayRef) {
       console.error('裁剪元素未找到');
+      console.error('this.cropImageRef', this.cropImageRef);
+      console.error('this.cropOverlayRef', this.cropOverlayRef);
       return;
     }
 
@@ -259,7 +265,7 @@ export class ImageCropperComponent
     this.isDragging = true;
     this.onTouched();
 
-    const overlay = this.cropOverlayRef.nativeElement;
+    const overlay = this.cropOverlayRef!.nativeElement;
     const rect = overlay.getBoundingClientRect();
 
     this.dragStart.x = event.clientX - rect.left;
@@ -274,7 +280,7 @@ export class ImageCropperComponent
     this.resizeHandle = handleClass;
     this.onTouched();
 
-    const overlay = this.cropOverlayRef.nativeElement;
+    const overlay = this.cropOverlayRef!.nativeElement;
     const rect = overlay.getBoundingClientRect();
 
     this.dragStart.x = event.clientX;
@@ -294,8 +300,8 @@ export class ImageCropperComponent
   }
 
   private handleDrag(event: MouseEvent) {
-    const overlay = this.cropOverlayRef.nativeElement;
-    const cropImage = this.cropImageRef.nativeElement;
+    const overlay = this.cropOverlayRef!.nativeElement;
+    const cropImage = this.cropImageRef!.nativeElement;
     const containerRect = overlay.parentElement.getBoundingClientRect();
     const imageRect = cropImage.getBoundingClientRect();
 
@@ -310,8 +316,8 @@ export class ImageCropperComponent
   }
 
   private handleResize(event: MouseEvent) {
-    const overlay = this.cropOverlayRef.nativeElement;
-    const cropImage = this.cropImageRef.nativeElement;
+    const overlay = this.cropOverlayRef!.nativeElement;
+    const cropImage = this.cropImageRef!.nativeElement;
     const containerRect = overlay.parentElement.getBoundingClientRect();
     const imageRect = cropImage.getBoundingClientRect();
 
@@ -445,6 +451,7 @@ export class ImageCropperComponent
           const result: CropResult = {
             original: this.uploadedImage!,
             cropped: this.croppedImage,
+            cropImage: this.base64ToBlob(this.croppedImage),
             cropData: {
               x: cropX,
               y: cropY,
@@ -470,5 +477,17 @@ export class ImageCropperComponent
 
       img.src = this.uploadedImage;
     });
+  }
+  base64ToBlob(base64: string) {
+    const parts = base64.split(',');
+    const mime = parts[0].match(/:(.*?);/)![1]; // e.g. "image/png"
+    const binary = atob(parts[1]); // 解碼
+    let length = binary.length;
+    const u8arr = new Uint8Array(length);
+
+    while (length--) {
+      u8arr[length] = binary.charCodeAt(length);
+    }
+    return new Blob([u8arr], { type: mime });
   }
 }

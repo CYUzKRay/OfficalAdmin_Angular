@@ -2,12 +2,38 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { ImageCropperComponent } from './image-cropper/image-cropper.component';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule, ɵInternalFormsSharedModule } from '@angular/forms';
+import { HttpService } from './service/http.service';
+import { EditorComponent } from './editor/editor.component';
+import { PictureManageComponent } from './picture/picture-manage/picture-manage.component';
+import { PaginationComponent } from './pagination/pagination.component';
+import { LoadingComponent } from './loading/loading.component';
+import { ModalComponent } from './modal/modal.component';
 
-let exportComponents = [ImageCropperComponent];
-
+let exportComponents = [
+  ImageCropperComponent,
+  EditorComponent,
+  PictureManageComponent,
+  PaginationComponent,
+  LoadingComponent,
+  ModalComponent,
+];
+let exportModules = [FormsModule, HttpClientModule];
 @NgModule({
-  declarations: [exportComponents],
-  imports: [CommonModule],
-  exports: [exportComponents],
+  declarations: [
+    exportComponents,
+    EditorComponent,
+    LoadingComponent,
+    ModalComponent,
+  ],
+  imports: [
+    CommonModule,
+    HttpClientModule,
+    ɵInternalFormsSharedModule,
+    FormsModule,
+  ],
+  exports: [exportComponents, exportModules],
+  providers: [HttpService],
 })
 export class ShareModule {}

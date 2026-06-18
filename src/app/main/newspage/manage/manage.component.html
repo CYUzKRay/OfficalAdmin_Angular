@@ -1,1 +1,112 @@
-<p>manage works!</p>
+<div class="admin-container">
+  <!-- 頁面內容 -->
+  <div class="admin-content">
+    <!-- 消息篩選和搜尋 -->
+    <div class="content-section">
+      <div class="filter-tools">
+        <div class="filter-group">
+          <label for="news-category">消息分類</label>
+          <select
+            id="news-category"
+            [(ngModel)]="searchData.classification"
+            required
+          >
+            <option value="" selected>全部分類</option>
+            <option value="公司消息">公司消息</option>
+            <option value="產品資訊">產品資訊</option>
+            <option value="活動通知">活動通知</option>
+            <option value="媒體報導">媒體報導</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="news-status">狀態</label>
+          <select id="news-status" [(ngModel)]="searchData.status">
+            <option [value]="undefined" selected>全部狀態</option>
+            <option [value]="true">已發布</option>
+            <option [value]="false">已下架</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <label for="news-search">搜尋</label>
+          <div class="search-box">
+            <input
+              type="text"
+              id="news-search"
+              placeholder="輸入關鍵字"
+              [(ngModel)]="searchData.keyword"
+            />
+            <button class="search-btn">搜尋</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 消息列表 -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>消息列表</h2>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>標題</th>
+              <th>分類</th>
+              <th>發布日期</th>
+              <th>排序</th>
+              <th>狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let news of newList">
+              <td>{{ news.orders }}</td>
+              <td class="news-title-cell">
+                <div class="news-title">{{ news.title }}</div>
+              </td>
+              <td>
+                <span class="category-badge company">{{
+                  news.classification
+                }}</span>
+              </td>
+              <td>{{ news.date }}</td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn">▲</button>
+                  <button class="order-btn down-btn">▼</button>
+                </div>
+              </td>
+              <td>
+                <div class="status-badge active">
+                  {{ news.status ? "已發布" : "隱藏" }}
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="view-btn" (click)="previewNews(news.id)">
+                    檢視
+                  </button>
+                  <button class="edit-btn" (click)="editNews(news.id)">
+                    編輯
+                  </button>
+                  <button class="delete-btn" (click)="deleteNews(news.id)">
+                    刪除
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 分頁控制 -->
+      <app-pagination
+        [TotalCount]="totalCount"
+        [PageSize]="pageSize"
+        (PageIndexUploaded)="setPage($event)"
+      ></app-pagination>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,4 @@
 /* You can add global styles to this file, and also import other style files */
-
 /* 基本樣式重置 */
 * {
   margin: 0;
@@ -541,7 +540,9 @@ p {
   padding: 0 10px;
   width: 100%;
 }
-
+.form-group.col-4 {
+  width: 33.33%;
+}
 .form-group.col-5 {
   width: 41.66%;
 }

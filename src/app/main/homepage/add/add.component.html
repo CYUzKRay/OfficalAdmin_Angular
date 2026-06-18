@@ -9,6 +9,9 @@
         圖片編輯
       </h2>
 
+      <app-image-cropper
+        (cropApplied)="PreviewImage($event)"
+      ></app-image-cropper>
       <!-- 圖片上傳 -->
       <!-- <div class="upload-area" id="uploadArea" (click)="OpenFileUpload()">
         <div class="upload-icon">
@@ -64,6 +67,20 @@
             type="text"
             id="slideTitle"
             name="title"
+            [(ngModel)]="uploadData.title"
+            placeholder="請輸入輪播圖標題"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="slideTitle">
+            子標題 <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="slideTitle"
+            name="title"
             placeholder="請輸入輪播圖標題"
             required
           />
@@ -75,6 +92,7 @@
             type="text"
             id="slideLink"
             name="link"
+            [(ngModel)]="uploadData.url"
             placeholder="https://example.com"
           />
         </div>
@@ -89,19 +107,30 @@
       </h2>
 
       <!-- 輪播預覽容器 -->
-      <div class="carousel-preview" id="carouselPreview">
+      <div class="carousel-preview" id="carouselPreview" #carouselPreview>
         <div class="carousel-slide active">
-          <div class="empty-preview" id="emptyPreview">
+          <div
+            class="empty-preview"
+            id="emptyPreview"
+            style="width: 100%"
+            *ngIf="selectedImageUrl == ''"
+          >
             <i class="fas fa-image"></i>
             <div>請上傳圖片並應用裁剪</div>
-            <img id="cropImage" [src]="selectedImageUrl" alt="裁剪圖片" />
           </div>
           <div
             class="carousel-content"
             id="carouselContent"
-            style="display: none"
+            style="width: 100%"
+            *ngIf="selectedImageUrl != ''"
           >
-            <div class="carousel-title">請輸入標題</div>
+            <img
+              style="width: 100%"
+              id="cropImage"
+              *ngIf="selectedImageUrl"
+              [src]="selectedImageUrl"
+              alt="裁剪圖片"
+            />
           </div>
         </div>
 
@@ -133,17 +162,14 @@
 
       <!-- 設備預覽 -->
       <div class="device-preview">
-        <button class="device-btn active" data-device="desktop">
-          <i class="fas fa-desktop"></i>
-          桌面版
-        </button>
-        <button class="device-btn" data-device="tablet">
-          <i class="fas fa-tablet-alt"></i>
-          平板
-        </button>
-        <button class="device-btn" data-device="mobile">
-          <i class="fas fa-mobile-alt"></i>
-          手機
+        <button
+          class="device-btn"
+          *ngFor="let device of deviceTemplate"
+          [ngClass]="device.active ? 'active' : ''"
+          (click)="PreviewTelplate(device)"
+        >
+          <i class="fas" [ngClass]="device.icon"></i>
+          <a>{{ device.name }}</a>
         </button>
       </div>
     </div>
@@ -164,7 +190,7 @@
       <i class="fas fa-eye"></i>
       預覽效果
     </button>
-    <button type="submit" class="btn btn-success" id="saveBtn">
+    <button type="submit" class="btn btn-success" id="saveBtn" (click)="Save()">
       <i class="fas fa-save"></i>
       <span id="saveBtnText">儲存設定</span>
     </button>

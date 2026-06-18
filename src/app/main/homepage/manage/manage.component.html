@@ -13,87 +13,48 @@
           <thead>
             <tr>
               <th>序號</th>
-              <th>預覽圖</th>
               <th>標題</th>
-              <th>描述</th>
+              <th>網址</th>
               <th>排序</th>
               <th>啟用狀態</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="首頁輪播圖1"
-                  class="preview-img"
-                />
-              </td>
-              <td>專業砂布解決方案</td>
-              <td>提供高品質砂布產品，滿足您的各種研磨需求</td>
+            <tr *ngFor="let carousel of carousels">
+              <td>{{ carousel.index }}</td>
+              <td>{{ carousel.title }}</td>
+              <td>{{ carousel.url }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
+                  <button
+                    class="order-btn up-btn"
+                    (click)="editCarouselSort('up', carousel)"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    class="order-btn down-btn"
+                    (click)="editCarouselSort('down', carousel)"
+                  >
+                    ▼
+                  </button>
                 </div>
               </td>
-              <td><div class="status-badge active">啟用</div></td>
+              <td>
+                <div
+                  (click)="changeCarouselStatus(carousel)"
+                  class="status-badge"
+                  [ngClass]="carousel.status ? 'active' : 'inactive'"
+                >
+                  {{ carousel.status ? "啟用" : "隱藏" }}
+                </div>
+              </td>
               <td>
                 <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="首頁輪播圖2"
-                  class="preview-img"
-                />
-              </td>
-              <td>最新環保砂布系列上市</td>
-              <td>效能與環保並重的全新產品</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="首頁輪播圖3"
-                  class="preview-img"
-                />
-              </td>
-              <td>客製化服務</td>
-              <td>依需求提供最適合您的產品</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge inactive">停用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
+                  <button class="delete-btn" (click)="deleteCarousel(carousel)">
+                    刪除
+                  </button>
                 </div>
               </td>
             </tr>

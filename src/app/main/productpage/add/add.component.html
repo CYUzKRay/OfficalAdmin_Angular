@@ -1,1 +1,412 @@
-<p>add works!</p>
+<div class="page-wrapper">
+  <!-- 頁頭 -->
+  <div class="admin-header">
+    <h1>新增產品</h1>
+  </div>
+
+  <!-- ① 基本資訊 -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">基本資訊</h2>
+    </div>
+    <div class="card-body">
+      <div class="form-row">
+        <!-- 上架狀態 -->
+        <div class="form-group col-6">
+          <label class="form-label">上架狀態</label>
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="isActive" name="isActive" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" id="status-label">{{ isActive ? '上架中' : '未上架' }}</span>
+          </div>
+        </div>
+        <!-- 是否可購買 -->
+        <div class="form-group col-6">
+          <label class="form-label">是否可購買</label>
+          <div class="toggle-row">
+            <label class="toggle-switch">
+              <input type="checkbox" [(ngModel)]="can_order" name="can_order" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span class="toggle-label" id="can-order-label">
+              {{ can_order ? '可直接購買' : '不可直接購買' }}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- 產品名稱 -->
+        <div class="form-group col-12">
+          <label class="form-label"
+            >產品名稱 <span class="required">*</span></label
+          >
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="productName"
+            name="productName"
+            placeholder="請輸入產品名稱"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- 單位 -->
+        <div class="form-group col-6">
+          <label class="form-label">銷售單位</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="unit"
+            name="unit"
+            placeholder="張 / 捲 / 包…"
+          />
+        </div>
+        <!-- 型號 -->
+        <div class="form-group col-6">
+          <label class="form-label">型號</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="modelNumber"
+            name="modelNumber"
+            placeholder="e.g. X799"
+          />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- 分類 -->
+        <div class="form-group col-6">
+          <label class="form-label">主分類</label>
+          <select
+            class="form-control"
+            [(ngModel)]="selectedMainCategoryId"
+            (change)="onMainCategoryChange()"
+            name="mainCategory"
+          >
+            <option value="">請選擇主分類</option>
+            <option *ngFor="let cat of mainCategories" [value]="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group col-6">
+          <label class="form-label">次分類</label>
+          <select
+            class="form-control"
+            [(ngModel)]="selectedSubCategoryId"
+            name="subCategory"
+          >
+            <option value="">請選擇次分類</option>
+            <option *ngFor="let cat of subCategories" [value]="cat.id">
+              {{ cat.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <!-- 規格 -->
+        <div class="form-group col-6">
+          <label class="form-label">規格</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="specification"
+            name="specification"
+            placeholder='e.g. 4" x 36"、豐接'
+          />
+        </div>
+        <!-- 材質 -->
+        <div class="form-group col-6">
+          <label class="form-label">材質</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="material"
+            name="material"
+            placeholder="請輸入材質"
+          />
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">適用於</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="usage"
+            name="usage"
+            placeholder="請描述適用場景"
+          />
+          <p class="form-hint">多個用途請以頓號「、」分隔</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">產品描述</label>
+          <app-editor
+            [(ngModel)]="productDescription"
+            [ngModelOptions]="{standalone: true}"
+          ></app-editor>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 番號管理 -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">番號（粒度規格）</h2>
+      <span class="count-badge">{{ items.length }} 筆</span>
+    </div>
+
+    <div class="card-body">
+      <p class="form-hint">
+        拖曳左側 <span class="drag-icon-hint">⠿</span> 可調整順序；
+        每個番號可設定個別售價，若留空則沿用產品預設售價。
+      </p>
+
+      <!-- 表頭 -->
+      <div class="grit-thead">
+        <span class="col-drag"></span>
+        <span> <span class="required">*</span>番號</span>
+        <span class="col-price">售價（NT$）</span>
+        <span class="col-action"></span>
+      </div>
+
+      <!-- 拖曳列表 -->
+      <div
+        cdkDropList
+        [cdkDropListData]="items"
+        (cdkDropListDropped)="dropGrit($event)"
+        class="grit-list"
+      >
+        <div
+          *ngFor="let item of items; trackBy: trackGritById; let i = index"
+          cdkDrag
+          cdkDragBoundary=".grit-list"
+          class="grit-row"
+          [class.grit-row--error]="!item.grit.trim()"
+        >
+          <!-- 拖曳把手 -->
+          <span class="col-drag drag-handle" cdkDragHandle title="拖曳排序"
+            >⠿</span
+          >
+
+          <!-- 番號輸入 -->
+          <div class="col-grit">
+            <input
+              class="grit-input"
+              type="text"
+              [(ngModel)]="item.grit"
+              [name]="'grit_' + item.id"
+              placeholder="e.g. 80#"
+              [class.input-error]="!item.grit.trim()"
+            />
+            <span class="field-error" *ngIf="!item.grit.trim()">必填</span>
+          </div>
+
+          <!-- 價格輸入 -->
+          <div class="col-price">
+            <div class="price-input-wrap">
+              <span class="price-prefix">NT$</span>
+              <input
+                class="grit-input price-input"
+                type="number"
+                [(ngModel)]="item.price"
+                [name]="'price_' + item.id"
+                min="0"
+              />
+            </div>
+          </div>
+
+          <!-- 移除 -->
+          <div class="col-action">
+            <button
+              class="remove-btn"
+              type="button"
+              title="移除此番號"
+              [disabled]="items.length <= 1"
+              (click)="removeItem(i)"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- CDK 拖曳佔位符樣式 -->
+          <div *cdkDragPlaceholder class="grit-placeholder"></div>
+        </div>
+      </div>
+
+      <!-- 操作按鈕區 -->
+      <div class="grit-actions-row">
+        <button class="action-btn-secondary" type="button" (click)="addItem()">
+          ＋ 單筆新增
+        </button>
+        <button class="action-btn-secondary" type="button" (click)="showBulkInput = !showBulkInput">
+          ⚡ 批次輸入
+        </button>
+      </div>
+
+      <!-- 批次輸入區塊 -->
+      <div class="bulk-input-container" *ngIf="showBulkInput">
+        <label class="form-label">批次輸入番號</label>
+        <textarea
+          class="form-control bulk-textarea"
+          rows="3"
+          [(ngModel)]="bulkInputText"
+          placeholder="請輸入番號，並以逗號、頓號、空格或換行分隔（例如：80, 120, 240, P400）"
+        ></textarea>
+        <div class="bulk-actions">
+          <button class="bulk-btn bulk-btn--cancel" type="button" (click)="showBulkInput = false">取消</button>
+          <button class="bulk-btn bulk-btn--confirm" type="button" (click)="generateBulkGrits()">確認產生</button>
+        </div>
+      </div>
+
+      <!-- 常用範本快速鍵 -->
+      <div class="preset-section">
+        <span class="preset-title">常用範本套用：</span>
+        <div class="preset-chips">
+          <button type="button" class="preset-chip" (click)="applyPreset('coarse')">粗磨系列 (40#-120#)</button>
+          <button type="button" class="preset-chip" (click)="applyPreset('medium-fine')">中細磨系列 (150#-400#)</button>
+          <button type="button" class="preset-chip" (click)="applyPreset('ultra-fine')">極細拋光 (600#-1500#)</button>
+          <button type="button" class="preset-chip" (click)="applyPreset('standard')">常用級距 (40#-800#)</button>
+        </div>
+      </div>
+
+      <!-- 摘要 -->
+      <div class="grit-summary" *ngIf="items.length > 0">
+        <span>共 {{ items.length }} 個番號</span>
+        <span *ngIf="hasCustomPrice">
+          ・價格區間 NT${{ minPrice() | number }} – NT${{ maxPrice() | number }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ③ 產品圖片 -->
+  <div class="card">
+    <div class="card-header">
+      <h2 class="card-title">產品圖片</h2>
+      <span class="count-badge">{{ images.length }} 張</span>
+    </div>
+
+    <div class="card-body">
+      <p class="form-hint">
+        支援 JPG / PNG / WebP，單檔上限 {{ MAX_SIZE_MB }}MB。
+        拖曳縮圖可調整順序，第一張自動設為主圖；或點擊縮圖左上角星號手動指定。
+      </p>
+
+      <!-- 錯誤訊息 -->
+      <div class="upload-error" *ngIf="errorMessage">
+        <span>⚠ {{ errorMessage }}</span>
+        <button type="button" class="error-close" (click)="errorMessage = ''">
+          ✕
+        </button>
+      </div>
+
+      <!-- 拖放上傳區 -->
+      <div
+        class="drop-zone"
+        [class.drop-zone--over]="isDragOver"
+        (dragover)="onDragOver($event)"
+        (dragleave)="onDragLeave()"
+        (drop)="onDropFiles($event)"
+        (click)="triggerInput(fileInput)"
+      >
+        <input
+          #fileInput
+          type="file"
+          multiple
+          accept="image/jpeg,image/png,image/webp"
+          style="display: none"
+          (change)="onFilesSelected($event)"
+        />
+        <div class="drop-zone__inner">
+          <div class="drop-zone__icon">🖼</div>
+          <p class="drop-zone__text">點擊或拖放圖片至此處上傳</p>
+          <p class="drop-zone__hint">
+            JPG / PNG / WebP・單檔上限 {{ MAX_SIZE_MB }}MB
+          </p>
+        </div>
+      </div>
+
+      <!-- 已上傳縮圖列表（CDK 拖曳排序） -->
+      <div
+        *ngIf="images.length > 0"
+        cdkDropList
+        cdkDropListOrientation="horizontal"
+        [cdkDropListData]="images"
+        (cdkDropListDropped)="dropImage($event)"
+        class="thumb-list"
+      >
+        <div
+          *ngFor="let img of images; trackBy: trackImageById; let i = index"
+          cdkDrag
+          class="thumb-item"
+          [class.thumb-item--main]="img.isMain"
+        >
+          <!-- 預覽圖 -->
+          <img [src]="img.previewUrl" [alt]="img.file.name" class="thumb-img" />
+
+          <!-- 主圖標籤 -->
+          <span class="main-label" *ngIf="img.isMain">主圖</span>
+
+          <!-- Hover 工具列 -->
+          <div class="thumb-overlay">
+            <button
+              type="button"
+              class="thumb-btn thumb-btn--star"
+              [class.is-main]="img.isMain"
+              [title]="img.isMain ? '已是主圖' : '設為主圖'"
+              (click)="setMain(i)"
+            >
+              ★
+            </button>
+            <button
+              type="button"
+              class="thumb-btn thumb-btn--remove"
+              title="移除"
+              (click)="removeImage(i)"
+            >
+              ✕
+            </button>
+          </div>
+
+          <!-- 拖曳把手提示 -->
+          <div class="thumb-drag-hint">⠿</div>
+
+          <!-- CDK 佔位符 -->
+          <div *cdkDragPlaceholder class="thumb-placeholder"></div>
+        </div>
+      </div>
+
+      <!-- 底部資訊列 -->
+      <div class="upload-footer" *ngIf="images.length > 0">
+        <span class="footer-hint"
+          >拖曳縮圖可重新排序，排列第一張將自動成為主圖</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- ④ 底部操作 -->
+  <div
+    class="card"
+    style="margin-top: 20px; padding-bottom: 0; overflow: hidden"
+  >
+    <div class="card-body" style="padding-bottom: 0">
+      <div class="sticky-footer">
+        <button class="cancel-btn" type="button" onclick="history.back()">取消</button>
+        <button class="save-btn" type="button" (click)="onSave()">儲存變更</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- /page-wrapper -->

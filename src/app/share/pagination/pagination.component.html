@@ -1,0 +1,15 @@
+<!-- 分頁控制 -->
+<div class="pagination">
+  <button class="page-btn prev-btn" (click)="previousPage()">&laquo;</button>
+
+  <button
+    class="page-btn"
+    [ngClass]="(currentPageIndex - 1) % pageSize == pageIndex ? 'active' : ''"
+    *ngFor="let number of paginations; let pageIndex = index"
+    (click)="choosePage(number)"
+  >
+    {{ number }}
+  </button>
+
+  <button class="page-btn next-btn" (click)="nextPage()">&raquo;</button>
+</div>

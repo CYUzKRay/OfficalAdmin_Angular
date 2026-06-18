@@ -7,6 +7,7 @@ import { NavbarComponent } from './layout/navbar/navbar.component';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { MainComponent } from './main/main.component';
 import { LoginIndexComponent } from './login/login-index.component';
+import { HttpService } from './share/service/http.service';
 
 @NgModule({
   declarations: [

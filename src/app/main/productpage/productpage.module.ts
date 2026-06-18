@@ -5,17 +5,16 @@ import { ProductpageRoutingModule } from './productpage-routing.module';
 import { ProductpageComponent } from './productpage.component';
 import { ManageComponent } from './manage/manage.component';
 import { AddComponent } from './add/add.component';
-
+import { ShareModule } from 'src/app/share/share.module';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 @NgModule({
-  declarations: [
-    ProductpageComponent,
-    ManageComponent,
-    AddComponent
-  ],
+  declarations: [ProductpageComponent, ManageComponent, AddComponent],
   imports: [
     CommonModule,
-    ProductpageRoutingModule
-  ]
+    ProductpageRoutingModule,
+    ShareModule,
+    DragDropModule,
+  ],
 })
-export class ProductpageModule { }
+export class ProductpageModule {}
