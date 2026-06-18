@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
+import { environment } from 'src/environments/environment';
+import { NewsModelResponseData } from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-preview',
@@ -21,9 +23,11 @@ export class PreviewComponent {
       this.newId = x.get('id')!;
       // console.log(x.get('id'));
       this.http
-        .get(`http://localhost:5133/api/News/PreviewNew/${this.newId}`)
-        .subscribe((x: any) => {
-          this.html = x.data.newContent;
+        .get<NewsModelResponseData>(
+          `${environment.apiUrl}News/PreviewNew/${this.newId}`,
+        )
+        .subscribe((x) => {
+          this.html = x.data?.newContent ?? '';
         });
     });
   }

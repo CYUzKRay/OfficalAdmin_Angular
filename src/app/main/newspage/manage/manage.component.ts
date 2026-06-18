@@ -1,8 +1,12 @@
 import { Component, OnInit } from '@angular/core';
-import { NewsPageManage } from './manage';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
 import { environment } from 'src/environments/environment';
+import {
+  NewListModel,
+  NewsSearchParametersModel,
+  NewsPaginationModel,
+} from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-manage',
@@ -10,8 +14,8 @@ import { environment } from 'src/environments/environment';
   styleUrls: ['./manage.component.css'],
 })
 export class ManageComponent implements OnInit {
-  newList: NewsPageManage[] = [];
-  searchData = {
+  newList: NewListModel[] = [];
+  searchData: NewsSearchParametersModel = {
     classification: '',
     keyword: '',
     status: undefined,
@@ -37,9 +41,12 @@ export class ManageComponent implements OnInit {
 
   shearchNews() {
     this.http
-      .postJson('http://localhost:5133/api/News/News', this.searchData)
-      .subscribe((x: any) => {
-        this.totalCount = x.totalCount;
+      .postJson<NewsPaginationModel>(
+        `${environment.apiUrl}News/News`,
+        this.searchData,
+      )
+      .subscribe((x) => {
+        this.totalCount = x.totalCount ?? 0;
 
         const pageCount = Math.ceil(this.totalCount / this.pageSize);
 
@@ -48,21 +55,24 @@ export class ManageComponent implements OnInit {
         for (let i = 1; i <= pageCount; i++) {
           this.paginations.push(i);
         }
-        this.newList = x.newsList;
+        this.newList = x.newsList ?? [];
       });
   }
 
-  previewNews(newId: string) {
+  previewNews(newId?: string) {
+    if (!newId) return;
     this.route.navigate([`main/news/preview/${newId}`]);
   }
 
-  editNews(newId: string) {
+  editNews(newId?: string) {
+    if (!newId) return;
     this.route.navigate([`main/news/add/${newId}`]);
   }
 
-  deleteNews(newId: string) {
+  deleteNews(newId?: string) {
+    if (!newId) return;
     this.http
-      .delete(`http://localhost:5133/api/News/DeleteNews/${newId}`)
+      .delete(`${environment.apiUrl}News/DeleteNews/${newId}`)
       .subscribe((x) => {
         this.newList = this.newList.filter((y) => {
           if (y.id != newId) {

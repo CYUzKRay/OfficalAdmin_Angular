@@ -7,13 +7,13 @@ import {
   ViewChild,
 } from '@angular/core';
 import { HttpService } from '../../service/http.service';
-import { ResponseData } from '../../models/ResponseData';
 import { environment } from 'src/environments/environment';
 import {
-  ImageResult,
-  pictureManageResult,
-  pictureManageResultContent,
-} from './pictureManageResult';
+  S3PictureModel,
+  StringIReadOnlyListResponseData,
+  ImagePaginationModelResponseData,
+} from 'src/app/core/api/models';
+import { ImageResult } from './pictureManageResult';
 
 export interface awsImageUploadContent {
   title: string;
@@ -36,43 +36,55 @@ export class PictureManageComponent implements OnInit {
   photos: any[] = [];
   selectDirectory: string = '';
   directories: string[] = [];
-  images: pictureManageResult[] = [];
+  images: S3PictureModel[] = [];
   selectImagesDirectory: string = '';
-  selectImages: pictureManageResultContent[] = [];
+  selectImages: S3PictureModel[] = [];
+
+  pageIndex = 0;
+  pageSize = 20;
+  totalCount = 0;
 
   constructor(private http: HttpService) {}
 
   ngOnInit(): void {
     this.http
-      .get<ResponseData<string[]>>(`${environment.apiUrl}S3/directories`)
+      .get<StringIReadOnlyListResponseData>(`${environment.apiUrl}S3/directories`)
       .subscribe((x) => {
-        this.directories = x.data;
-        this.selectDirectory = x.data[0];
+        this.directories = x.data ?? [];
+        this.selectDirectory = this.directories[0] ?? '';
       });
 
+    this.loadImages();
+  }
+
+  loadImages() {
     this.http
-      .get<ResponseData<pictureManageResult[]>>(
-        `${environment.apiUrl}S3/images`
+      .get<ImagePaginationModelResponseData>(
+        `${environment.apiUrl}S3/images`,
+        {
+          directory: this.selectImagesDirectory === '/' ? '' : this.selectImagesDirectory,
+          pageIndex: this.pageIndex,
+          pageSize: this.pageSize
+        }
       )
       .subscribe((x) => {
-        this.images = x.data;
-        let firstImage = x.data.filter((x) => x.directory == '/')[0];
-        this.selectImagesDirectory = firstImage.directory;
-        this.selectImages = firstImage.images;
+        if (x.data) {
+          this.selectImages = x.data.images ?? [];
+          this.totalCount = x.data.totalCount ?? 0;
+        }
       });
   }
 
   changePhotos() {
-    this.selectImages = this.images.filter(
-      (x) => x.directory == this.selectImagesDirectory
-    )[0].images;
+    this.pageIndex = 0;
+    this.loadImages();
   }
 
-  copyPhotoUrl(photo: pictureManageResultContent) {
+  copyPhotoUrl(photo: S3PictureModel) {
     // photo.url
-    this.imageUrlToBase64(photo.url).then((base64) => {
+    this.imageUrlToBase64(photo.url!).then((base64) => {
       // navigator.clipboard.writeText(base64);
-      var result = new ImageResult(base64, photo.url);
+      var result = new ImageResult(base64, photo.url!);
       this.imageUrlResult.emit(result);
       console.log(result);
     });
@@ -97,31 +109,15 @@ export class PictureManageComponent implements OnInit {
     });
   }
 
-  deletePhoto(photo: pictureManageResultContent) {
-    var imageKey = photo.directories + photo.imageName;
-    var smallImageKey = photo.directories + photo.smallImageName;
+  deletePhoto(photo: S3PictureModel) {
+    var imageKey = (photo.directories ?? '') + (photo.imageName ?? '');
+    var smallImageKey = (photo.directories ?? '') + (photo.smallImageName ?? '');
     this.http
       .delete(
         `${environment.apiUrl}S3/deleteImages?imageKey=${imageKey}&smallImageKey=${smallImageKey}`
       )
       .subscribe((res) => {
-        this.selectImages = this.selectImages.filter((x) => x.url != photo.url);
-        // this.images.forEach((x) => {
-        //   if (x.directory == photo.directories) x.images = x.images.filter((img) => img.url != photo.url);
-        // });
-        // this.images[0].images = this.images[0].images.filter(
-        //   (x) => x.url != photo.url
-        // );
-
-        this.images.forEach((x) => {
-          if (x.directory == '/' || x.directory == photo.directories) {
-            var newImages = x.images.filter((x) => x.url != photo.url);
-            x.images = newImages;
-            // if (x.directory == photo.directories) {
-            //   this.selectImages = newImages;
-            // }
-          }
-        });
+        this.loadImages();
       });
   }
 

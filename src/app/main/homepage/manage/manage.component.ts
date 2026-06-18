@@ -1,9 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
-import { HomePageManage } from './manage';
-import { ResponseData } from 'src/app/share/models/ResponseData';
 import { environment } from 'src/environments/environment';
+import {
+  SearchHomeCarouselModel,
+  SearchHomeCarouselModelListResponseData,
+  HomeCarouselResponseData,
+  Response as ApiResponse,
+} from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-manage',
@@ -13,7 +17,7 @@ import { environment } from 'src/environments/environment';
 export class ManageComponent implements OnInit {
   constructor(private route: Router, private http: HttpService) {}
 
-  carousels: HomePageManage[] = [];
+  carousels: SearchHomeCarouselModel[] = [];
 
   ngOnInit(): void {
     this.searchCarousel();
@@ -21,17 +25,17 @@ export class ManageComponent implements OnInit {
 
   searchCarousel() {
     this.http
-      .get<ResponseData<HomePageManage[]>>(
+      .get<SearchHomeCarouselModelListResponseData>(
         `${environment.apiUrl}Carousel/SearchCarouselPictures`
       )
       .subscribe((x) => {
-        this.carousels = x.data;
+        this.carousels = x.data ?? [];
       });
   }
 
-  deleteCarousel(targetCarousel: HomePageManage) {
+  deleteCarousel(targetCarousel: SearchHomeCarouselModel) {
     this.http
-      .delete<ResponseData<HomePageManage>>(
+      .delete<HomeCarouselResponseData>(
         `${environment.apiUrl}Carousel/DeleteCarousel`,
         {
           carouselId: targetCarousel.id,
@@ -44,9 +48,9 @@ export class ManageComponent implements OnInit {
       });
   }
 
-  editCarouselSort(direction: string, carousel: HomePageManage) {
+  editCarouselSort(direction: string, carousel: SearchHomeCarouselModel) {
     this.http
-      .put<ResponseData<HomePageManage>>(
+      .put<ApiResponse>(
         `${environment.apiUrl}Carousel/EditPictureSort/${direction}`,
         carousel
       )
@@ -55,9 +59,9 @@ export class ManageComponent implements OnInit {
       });
   }
 
-  changeCarouselStatus(carousel: HomePageManage) {
+  changeCarouselStatus(carousel: SearchHomeCarouselModel) {
     this.http
-      .put<Boolean>(
+      .put<ApiResponse>(
         `${environment.apiUrl}Carousel/EditCarouselStatus/${carousel.id}`,
         null
       )

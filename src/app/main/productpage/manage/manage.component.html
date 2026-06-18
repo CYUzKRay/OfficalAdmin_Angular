@@ -167,27 +167,28 @@
     <div class="content-section">
       <div class="section-header">
         <h2>產品列表管理</h2>
-        <button class="add-btn">新增產品</button>
+        <button class="add-btn" routerLink="/main/product/add">新增產品</button>
       </div>
 
       <div class="filter-tools">
         <div class="filter-group">
           <label>主/次分類篩選</label>
-          <select class="form-control">
-            <option value="all">全部分類</option>
-            <optgroup label="砂布">
-              <option value="sub1">陶瓷砂布產品</option>
-              <option value="sub2">軟 / 半硬布環帶</option>
-            </optgroup>
-            <optgroup label="其他研磨產品">
-              <option value="sub3">砂輪</option>
-              <option value="sub4">拋光膏</option>
-            </optgroup>
+          <select class="form-control" [(ngModel)]="searchCategoryId" (change)="onFilterChange()">
+            <option [ngValue]="null">全部分類</option>
+            <ng-container *ngFor="let main of mainCategory">
+              <optgroup [label]="main.name || ''">
+                <ng-container *ngFor="let sub of subCategory">
+                  <option *ngIf="sub.parentId === main.id" [value]="sub.id">
+                    {{ sub.name }}
+                  </option>
+                </ng-container>
+              </optgroup>
+            </ng-container>
           </select>
         </div>
         <div class="filter-group">
           <label>產品狀態</label>
-          <select class="form-control">
+          <select class="form-control" [(ngModel)]="searchIsActive" (change)="onFilterChange()">
             <option value="all">全部狀態</option>
             <option value="active">上架中</option>
             <option value="inactive">已下架</option>
@@ -196,8 +197,8 @@
         <div class="filter-group" style="flex: 2">
           <label>關鍵字搜尋</label>
           <div class="search-box">
-            <input type="text" placeholder="輸入產品名稱或型號..." />
-            <button class="search-btn">搜尋</button>
+            <input type="text" placeholder="輸入產品名稱或型號..." [(ngModel)]="searchKeyword" (keyup.enter)="onFilterChange()" />
+            <button class="search-btn" (click)="onFilterChange()">搜尋</button>
           </div>
         </div>
       </div>
@@ -217,60 +218,48 @@
             </tr>
           </thead>
           <tbody>
-            <tr>
+            <tr *ngFor="let product of products">
               <td>
-                <img />
+                <img [src]="product.coverURL || 'assets/placeholder.jpg'" [alt]="product.productName" class="preview-img" style="max-width: 80px;" />
               </td>
-              <td><strong>NCA 陶瓷砂布環帶</strong></td>
-              <td>砂布 > 陶瓷砂布產品</td>
-              <td>特製高磨削力規格</td>
-              <td>客製化訂製</td>
+              <td><strong>{{ product.productName }}</strong></td>
+              <td>{{ product.categoryName }}</td>
+              <td>-</td> <!-- Swagger didn't expose spec in ProductSearchResModel so we leave placeholder or remove -->
+              <td>{{ product.orderType }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
+                  <button class="order-btn up-btn" (click)="editProductSort(product.productId, 'up')">▲</button>
+                  <button class="order-btn down-btn" (click)="editProductSort(product.productId, 'down')">▼</button>
                 </div>
               </td>
-              <td><div class="status-badge active">上架中</div></td>
+              <td>
+                <div class="status-badge" [class.active]="product.isActive" [class.inactive]="!product.isActive" style="cursor: pointer" (click)="toggleProductStatus(product.productId)">
+                  {{ product.isActive ? '上架中' : '已下架' }}
+                </div>
+              </td>
               <td>
                 <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
+                  <button class="edit-btn" (click)="editProduct(product.productId)">編輯</button>
+                  <button class="delete-btn" (click)="deleteProduct(product.productId)">刪除</button>
                 </div>
               </td>
             </tr>
-            <tr>
-              <td>
-                <img src="" alt="半硬布環帶" class="preview-img" />
-              </td>
-              <td><strong>半硬布環帶</strong></td>
-              <td>砂布 > 軟 / 半硬布環帶</td>
-              <td>TF32 / TR62</td>
-              <td>客製化訂製</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">上架中</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
+            <tr *ngIf="products.length === 0">
+              <td colspan="8" style="text-align: center; padding: 20px;">找不到符合的產品</td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="pagination">
-        <button class="page-btn" disabled>&lt;</button>
-        <button class="page-btn active">1</button>
-        <button class="page-btn">2</button>
-        <button class="page-btn">3</button>
-        <button class="page-btn">&gt;</button>
+      <div class="pagination" *ngIf="getPageArray().length > 0">
+        <button class="page-btn" [disabled]="pageIndex === 0" (click)="changePage(pageIndex - 1)">&lt;</button>
+        <button class="page-btn" 
+                *ngFor="let page of getPageArray()" 
+                [class.active]="page === pageIndex" 
+                (click)="changePage(page)">
+          {{ page + 1 }}
+        </button>
+        <button class="page-btn" [disabled]="pageIndex >= getPageArray().length - 1" (click)="changePage(pageIndex + 1)">&gt;</button>
       </div>
     </div>
   </div>
@@ -335,172 +324,3 @@
   </div>
 </app-modal>
 
-<!-- <div class="modal" id="mainCategoryModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>編輯主分類</h3>
-      <button class="close-btn">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form class="edit-form">
-        <div class="form-group">
-          <label class="form-label required">主分類名稱</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="輸入主分類名稱 (如：砂布)"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">狀態</label>
-          <select class="form-control">
-            <option value="1">啟用</option>
-            <option value="0">停用</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="cancel-btn">取消</button>
-          <button type="submit" class="save-btn">儲存</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="subCategoryModal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <h3>編輯次分類</h3>
-      <button class="close-btn">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form class="edit-form">
-        <div class="form-group">
-          <label class="form-label required">所屬主分類</label>
-          <select class="form-control">
-            <option value="">請選擇主分類...</option>
-            <option value="sandpaper">砂布</option>
-            <option value="other">其他研磨產品</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label required">次分類名稱</label>
-          <input
-            type="text"
-            class="form-control"
-            placeholder="輸入次分類名稱"
-          />
-        </div>
-        <div class="form-group">
-          <label class="form-label">狀態</label>
-          <select class="form-control">
-            <option value="1">啟用</option>
-            <option value="0">停用</option>
-          </select>
-        </div>
-        <div class="form-actions">
-          <button type="button" class="cancel-btn">取消</button>
-          <button type="submit" class="save-btn">儲存</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<div class="modal" id="productModal">
-  <div class="modal-content modal-lg">
-    <div class="modal-header">
-      <h3>編輯產品資訊</h3>
-      <button class="close-btn">&times;</button>
-    </div>
-    <div class="modal-body">
-      <form class="edit-form">
-        <div class="form-row">
-          <div class="form-group col-6">
-            <label class="form-label required">產品名稱</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="輸入產品名稱"
-            />
-          </div>
-          <div class="form-group col-6">
-            <label class="form-label required">所屬次分類</label>
-            <select class="form-control">
-              <option value="">請選擇分類...</option>
-              <optgroup label="砂布">
-                <option value="1">陶瓷砂布產品</option>
-                <option value="2">軟 / 半硬布環帶</option>
-              </optgroup>
-              <optgroup label="其他研磨產品">
-                <option value="3">砂輪</option>
-                <option value="4">拋光膏</option>
-              </optgroup>
-            </select>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group col-6">
-            <label class="form-label">規格 / 型號</label>
-            <input
-              type="text"
-              class="form-control"
-              placeholder="輸入規格型號"
-            />
-          </div>
-          <div class="form-group col-6">
-            <label class="form-label required">銷售類型</label>
-            <select class="form-control">
-              <option value="price">固定/區間價格 (如: NT$37 ~ NT$45)</option>
-              <option value="custom">客製化訂製 (詢價)</option>
-            </select>
-            <div
-              class="price-inputs"
-              style="display: flex; gap: 10px; margin-top: 10px"
-            >
-              <input type="text" class="form-control" placeholder="最低價" />
-              <span style="line-height: 38px">~</span>
-              <input type="text" class="form-control" placeholder="最高價" />
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label required">產品主要圖片</label>
-          <div class="image-upload">
-            <div class="preview-container">
-              <img src="/api/placeholder/300/200" alt="預覽圖" />
-            </div>
-            <button type="button" class="upload-btn">選擇圖片</button>
-            <div class="image-help">
-              建議尺寸：800x600px，檔案大小不超過 2MB
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">產品描述 (前端顯示文字)</label>
-          <textarea
-            class="form-control"
-            placeholder="輸入產品介紹敘述..."
-            style="height: 100px"
-          ></textarea>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">上架狀態</label>
-          <select class="form-control" style="width: 200px">
-            <option value="1">上架中 (顯示於前台)</option>
-            <option value="0">已下架 (隱藏)</option>
-          </select>
-        </div>
-
-        <div class="form-actions">
-          <button type="button" class="cancel-btn">取消</button>
-          <button type="submit" class="save-btn">儲存產品</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div> -->

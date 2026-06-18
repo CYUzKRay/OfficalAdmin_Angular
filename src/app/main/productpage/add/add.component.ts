@@ -2,9 +2,12 @@ import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
-import { ResponseData } from 'src/app/share/models/ResponseData';
 import { environment } from 'src/environments/environment';
-import { CategoryModel } from '../manage/category';
+import {
+  SearchCategoryModel,
+  SearchCategoryModelListResponseData,
+  Response as ApiResponse,
+} from 'src/app/core/api/models';
 import { GritItem } from './gritItem';
 import { ImageItem } from './imageItem';
 
@@ -43,8 +46,8 @@ export class AddComponent implements OnInit, OnDestroy {
   selectedMainCategoryId = '';
   selectedSubCategoryId = '';
 
-  mainCategories: CategoryModel[] = [];
-  subCategories: CategoryModel[] = [];
+  mainCategories: SearchCategoryModel[] = [];
+  subCategories: SearchCategoryModel[] = [];
 
   ngOnInit(): void {
     const defaults = [
@@ -67,9 +70,9 @@ export class AddComponent implements OnInit, OnDestroy {
 
   loadMainCategories(): void {
     this.http
-      .get<ResponseData<CategoryModel[]>>(`${environment.apiUrl}Product/SearchCateGory`)
+      .get<SearchCategoryModelListResponseData>(`${environment.apiUrl}Product/SearchCateGory`)
       .subscribe((res) => {
-        this.mainCategories = res.data;
+        this.mainCategories = res.data ?? [];
       });
   }
 
@@ -80,7 +83,7 @@ export class AddComponent implements OnInit, OnDestroy {
       return;
     }
     this.http
-      .get<ResponseData<CategoryModel[]>>(
+      .get<SearchCategoryModelListResponseData>(
         `${environment.apiUrl}Product/SearchCateGory`,
         {
           categoryId: this.selectedMainCategoryId,
@@ -88,7 +91,7 @@ export class AddComponent implements OnInit, OnDestroy {
         }
       )
       .subscribe((res) => {
-        this.subCategories = res.data;
+        this.subCategories = res.data ?? [];
       });
   }
 
@@ -355,7 +358,7 @@ export class AddComponent implements OnInit, OnDestroy {
     });
 
     this.http
-      .postForm<ResponseData<any>>(`${environment.apiUrl}Product/CreateProduct`, formData)
+      .postForm<ApiResponse>(`${environment.apiUrl}Product/CreateProduct`, formData)
       .subscribe({
         next: (res) => {
           alert('產品新增成功！');

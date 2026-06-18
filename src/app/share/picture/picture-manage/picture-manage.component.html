@@ -48,8 +48,9 @@
         [(ngModel)]="selectImagesDirectory"
         (change)="changePhotos()"
       >
-        <option *ngFor="let image of images">
-          {{ image.directory }}
+        <option value="/">全部</option>
+        <option *ngFor="let directory of directories">
+          {{ directory }}
         </option>
       </select>
       <button

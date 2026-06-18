@@ -837,7 +837,7 @@
                   },
                   "IsActive": {
                     "type": "boolean",
-                    "description": "是否上架(目前未寫入資料庫,保留欄位)"
+                    "description": "是否上架"
                   },
                   "Unit": {
                     "maxLength": 50,
@@ -964,15 +964,417 @@
         "tags": [
           "Product"
         ],
-        "summary": "查詢全部產品(列表頁用)",
-        "description": "回傳所有產品的摘要資訊。coverURL 為第一張產品圖的 S3 預簽名網址(10 分鐘有效),沒有圖片時為空字串。\r\ncategoryName 格式為「主分類 > 次分類」。",
+        "summary": "查詢產品列表(含分頁、篩選)",
+        "description": "coverURL 為第一張產品圖的 S3 預簽名網址(10 分鐘有效),沒有圖片時為空字串。\r\ncategoryName 格式為「主分類 > 次分類」。\r\npageIndex 從 0 開始;pageSize 省略時預設 10。",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "產品名稱關鍵字(模糊比對);null 或空字串代表不篩選",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "description": "依次分類 Id 篩選;null 代表不篩選",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "description": "依上下架狀態篩選;null 代表不篩選",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "description": "頁碼,從 0 開始",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每頁筆數;省略時預設 10",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
         "responses": {
           "200": {
-            "description": "成功,data 為產品摘要陣列",
+            "description": "成功,data 包含 totalCount 與當頁 productList",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ProductSearchResModelListResponseData"
+                  "$ref": "#/components/schemas/ProductPaginationModelResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/GetProductById/{id}": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "取得單一產品詳情(供編輯頁使用)",
+        "description": "回傳產品完整資料,含規格、番號價格表與圖片清單。\r\n圖片 URL 為 S3 預簽名網址(10 分鐘有效)。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "產品 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為產品詳情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailModelResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/EditProduct": {
+      "put": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "編輯產品(含規格、番號、圖片)",
+        "description": "以 `multipart/form-data` 更新產品資料。\r\n- `KeepPictureIds`:要保留的現有圖片 Id 清單;**不在清單內的現有圖片會從 S3 和資料庫刪除**\r\n- `Pictures`:本次要新增的圖片(可為空)\r\n- 番號為全量替換:送出的 Grits 即為最終結果\r\n圖片限制:jpeg / png / webp / gif,單張上限 10MB。",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "Name",
+                  "ProductId",
+                  "SubCategoryId"
+                ],
+                "type": "object",
+                "properties": {
+                  "ProductId": {
+                    "type": "string",
+                    "description": "要編輯的產品 Id",
+                    "format": "uuid"
+                  },
+                  "KeepPictureIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "要保留的現有圖片 Id 清單。\r\n不在清單內的現有圖片會從 S3 和資料庫刪除。\r\nPictures 欄位則承載本次要新增的圖片。"
+                  },
+                  "Name": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "產品名稱(最多 50 字)"
+                  },
+                  "IsActive": {
+                    "type": "boolean",
+                    "description": "是否上架"
+                  },
+                  "Unit": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "銷售單位,例如「箱」「包」(最多 50 字)"
+                  },
+                  "ModelNumber": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "產品型號(最多 50 字)"
+                  },
+                  "Material": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "材質(最多 50 字)"
+                  },
+                  "Usage": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "用途(最多 50 字)"
+                  },
+                  "Specification": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "規格(最多 50 字)"
+                  },
+                  "Description": {
+                    "type": "string",
+                    "description": "產品描述(無長度限制)"
+                  },
+                  "CanOrder": {
+                    "type": "boolean",
+                    "description": "是否可訂購。true 顯示「客製化訂製」;false 顯示「來電詢問」"
+                  },
+                  "Grits": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/GritModel"
+                    },
+                    "description": "番號價格表。表單格式:Grits[0].Grit、Grits[0].Price、Grits[1].Grit ..."
+                  },
+                  "Pictures": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    },
+                    "description": "產品圖片(可多張,第一張會作為列表封面;jpeg/png/webp/gif,單張上限 10MB)"
+                  },
+                  "SubCategoryId": {
+                    "type": "string",
+                    "description": "所屬次分類 Id(產品必須掛在次分類底下)",
+                    "format": "uuid"
+                  }
+                }
+              },
+              "encoding": {
+                "ProductId": {
+                  "style": "form"
+                },
+                "KeepPictureIds": {
+                  "style": "form"
+                },
+                "Name": {
+                  "style": "form"
+                },
+                "IsActive": {
+                  "style": "form"
+                },
+                "Unit": {
+                  "style": "form"
+                },
+                "ModelNumber": {
+                  "style": "form"
+                },
+                "Material": {
+                  "style": "form"
+                },
+                "Usage": {
+                  "style": "form"
+                },
+                "Specification": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "CanOrder": {
+                  "style": "form"
+                },
+                "Grits": {
+                  "style": "form"
+                },
+                "Pictures": {
+                  "style": "form"
+                },
+                "SubCategoryId": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "圖片格式不支援、超過大小限制或欄位驗證失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/DeleteProduct/{id}": {
+      "delete": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "刪除產品(含 S3 圖片)",
+        "description": "連同規格、番號、圖片一併刪除;S3 檔案同步清除。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "產品 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/ToggleProductStatus/{id}": {
+      "put": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "切換產品上下架狀態",
+        "description": "每次呼叫將 isActive 反轉。回傳訊息為「已上架」或「已下架」。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "產品 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "切換成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/EditProductSort/{id}/{direction}": {
+      "put": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "調整產品排序(上移/下移一格)",
+        "description": "全域排序(跨分類)。已到頂/到底時回傳 HTTP 200 但 `isSuccess: false`。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "要移動的產品 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "direction",
+            "in": "path",
+            "description": "移動方向:`up` 或 `down`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "交換完成(isSuccess: true);或已到頂/到底(isSuccess: false)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
                 }
               }
             }
@@ -985,26 +1387,43 @@
         "tags": [
           "S3"
         ],
-        "summary": "查詢圖庫圖片(依目錄分組)",
-        "description": "回傳依目錄分組的圖片清單。回應陣列的**第一個元素固定是 directory 為 \"/\" 的彙總組**,包含所有圖片;其後才是各實際目錄。\r\nurl(原圖)與 smallImageUrl(縮圖)皆為 S3 預簽名網址,10 分鐘有效。\r\n刪除圖片時需要用到 directories + imageName / smallImageName 組合出 key。",
+        "summary": "查詢圖庫圖片(分頁平鋪列表)",
+        "description": "回傳符合條件的圖片平鋪列表(依 S3 key 字母順序)。\r\nurl(原圖)與 smallImageUrl(縮圖)皆為 S3 預簽名網址,10 分鐘有效。\r\n刪除圖片時需要用到 directories + imageName / smallImageName 組合出 key。\r\npageIndex 從 0 開始;pageSize 省略時預設 20。",
         "parameters": [
           {
             "name": "directory",
             "in": "query",
-            "description": "過濾條件:只回傳 key 包含此字串的目錄;空字串代表全部",
+            "description": "目錄過濾關鍵字;null 或空字串代表不篩選",
             "schema": {
-              "type": "string",
-              "default": ""
+              "type": "string"
+            }
+          },
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "description": "頁碼,從 0 開始",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每頁筆數;省略時預設 20",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
             }
           }
         ],
         "responses": {
           "200": {
-            "description": "成功,data 為目錄分組陣列",
+            "description": "成功,data 包含 totalCount 與當頁 images",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImageDirectoryModelListResponseData"
+                  "$ref": "#/components/schemas/ImagePaginationModelResponseData"
                 }
               }
             }
@@ -1139,6 +1558,25 @@
         },
         "additionalProperties": false
       },
+      "GritDetailModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "grit": {
+            "type": "string",
+            "nullable": true
+          },
+          "price": {
+            "type": "integer",
+            "format": "int32"
+          }
+        },
+        "additionalProperties": false,
+        "description": "番號詳情(含 Id,供編輯頁識別現有項目)"
+      },
       "GritModel": {
         "required": [
           "grit"
@@ -1229,27 +1667,27 @@
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
-      "ImageDirectoryModel": {
+      "ImagePaginationModel": {
         "type": "object",
         "properties": {
-          "directory": {
-            "type": "string",
-            "description": "目錄路徑(含結尾斜線),例如 \"products/\";彙總組為 \"/\"",
-            "nullable": true
+          "totalCount": {
+            "type": "integer",
+            "description": "符合篩選條件的圖片總數",
+            "format": "int32"
           },
           "images": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/S3PictureModel"
             },
-            "description": "該目錄下的圖片清單",
+            "description": "當頁圖片列表",
             "nullable": true
           }
         },
         "additionalProperties": false,
-        "description": "圖庫的目錄分組。第一個元素固定為 directory = \"/\" 的彙總組(包含全部圖片)"
+        "description": "圖庫圖片的分頁查詢結果(平鋪列表,含目錄資訊)"
       },
-      "ImageDirectoryModelListResponseData": {
+      "ImagePaginationModelResponseData": {
         "type": "object",
         "properties": {
           "code": {
@@ -1267,12 +1705,7 @@
             "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
           },
           "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ImageDirectoryModel"
-            },
-            "description": "實際回傳的資料內容",
-            "nullable": true
+            "$ref": "#/components/schemas/ImagePaginationModel"
           }
         },
         "additionalProperties": false,
@@ -1585,6 +2018,13 @@
             "type": "string",
             "format": "uuid"
           },
+          "orders": {
+            "type": "number",
+            "format": "double"
+          },
+          "is_active": {
+            "type": "boolean"
+          },
           "grits": {
             "type": "array",
             "items": {
@@ -1696,6 +2136,155 @@
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
+      "ProductDetailModel": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "產品 Id",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "description": "產品名稱",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "是否上架"
+          },
+          "subCategoryId": {
+            "type": "string",
+            "description": "所屬次分類 Id",
+            "format": "uuid"
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "分類完整名稱,格式「主分類 > 次分類」",
+            "nullable": true
+          },
+          "unit": {
+            "type": "string",
+            "description": "銷售單位",
+            "nullable": true
+          },
+          "modelNumber": {
+            "type": "string",
+            "description": "產品型號",
+            "nullable": true
+          },
+          "material": {
+            "type": "string",
+            "description": "材質",
+            "nullable": true
+          },
+          "usage": {
+            "type": "string",
+            "description": "用途",
+            "nullable": true
+          },
+          "specification": {
+            "type": "string",
+            "description": "規格",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "產品描述",
+            "nullable": true
+          },
+          "canOrder": {
+            "type": "boolean",
+            "description": "是否可訂購"
+          },
+          "grits": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GritDetailModel"
+            },
+            "description": "番號價格表",
+            "nullable": true
+          },
+          "pictures": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductPictureModel"
+            },
+            "description": "產品圖片清單(含 S3 預簽名網址,10 分鐘有效)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "單一產品完整詳情(供編輯頁使用)"
+      },
+      "ProductDetailModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductDetailModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "ProductPaginationModel": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "符合篩選條件的總筆數(用於計算總頁數)",
+            "format": "int32"
+          },
+          "productList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSearchResModel"
+            },
+            "description": "當前頁的產品列表",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "產品列表的分頁查詢結果"
+      },
+      "ProductPaginationModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/ProductPaginationModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
       "ProductPicture": {
         "type": "object",
         "properties": {
@@ -1718,6 +2307,22 @@
           }
         },
         "additionalProperties": false
+      },
+      "ProductPictureModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "url": {
+            "type": "string",
+            "description": "S3 預簽名網址(10 分鐘有效)",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "圖片詳情(含 Id,供編輯頁決定保留或刪除)"
       },
       "ProductSearchResModel": {
         "type": "object",
@@ -1744,7 +2349,7 @@
           },
           "isActive": {
             "type": "boolean",
-            "description": "是否上架(目前固定為 true)"
+            "description": "是否上架"
           },
           "coverURL": {
             "type": "string",
@@ -1754,35 +2359,6 @@
         },
         "additionalProperties": false,
         "description": "產品列表中的單筆摘要"
-      },
-      "ProductSearchResModelListResponseData": {
-        "type": "object",
-        "properties": {
-          "code": {
-            "type": "integer",
-            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
-            "format": "int32"
-          },
-          "message": {
-            "type": "string",
-            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
-            "nullable": true
-          },
-          "isSuccess": {
-            "type": "boolean",
-            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
-          },
-          "data": {
-            "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ProductSearchResModel"
-            },
-            "description": "實際回傳的資料內容",
-            "nullable": true
-          }
-        },
-        "additionalProperties": false,
-        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
       "Product_Spec": {
         "type": "object",

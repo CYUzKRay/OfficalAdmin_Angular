@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 import { HttpService } from 'src/app/share/service/http.service';
 import { ImageResult } from 'src/app/share/picture/picture-manage/pictureManageResult';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { environment } from 'src/environments/environment';
+import { NewsModelResponseData, NewsResponseData, NewModel } from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-add',
@@ -10,12 +12,12 @@ import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
   styleUrls: ['./add.component.css'],
 })
 export class AddComponent {
-  uploadata = {
-    id: '',
+  uploadata: NewModel = {
+    id: null,
     title: '',
     introduction: '',
     classification: '',
-    date: new Date(),
+    date: new Date().toISOString(),
     status: true,
     newContent: '',
   };
@@ -34,15 +36,19 @@ export class AddComponent {
         this.isFinish = true;
         this.editId = x.get('id')!;
         this.http
-          .get(`http://localhost:5133/api/News/PreviewNew/${this.editId}`)
-          .subscribe((newsData: any) => {
-            this.uploadata.title = newsData.data.title;
-            this.uploadata.classification = newsData.data.classification;
-            this.uploadata.date = newsData.data.date;
-            this.uploadata.status = newsData.data.status;
-            this.uploadata.introduction = newsData.data.introduction;
-            this.gethtml = newsData.data.newContent;
-            this.uploadata.newContent = newsData.data.newContent;
+          .get<NewsModelResponseData>(
+            `${environment.apiUrl}News/PreviewNew/${this.editId}`,
+          )
+          .subscribe((newsData) => {
+            this.uploadata.title = newsData.data?.title ?? '';
+            this.uploadata.classification = newsData.data?.classification ?? '';
+            this.uploadata.date = newsData.data?.date
+              ? new Date(newsData.data.date).toISOString()
+              : new Date().toISOString();
+            this.uploadata.status = newsData.data?.status ?? true;
+            this.uploadata.introduction = newsData.data?.introduction ?? '';
+            this.gethtml = newsData.data?.newContent ?? '';
+            this.uploadata.newContent = newsData.data?.newContent ?? '';
             this.uploadata.id = this.editId;
             this.isFinish = false;
           });
@@ -91,7 +97,10 @@ export class AddComponent {
     };
 
     this.http
-      .postForm('http://localhost:5133/api/News/CreateNews', postData)
+      .postForm<NewsResponseData>(
+        `${environment.apiUrl}News/CreateNews`,
+        postData,
+      )
       .subscribe((x) => {
         this.isFinish = false;
         this.router.navigate([`main/news/manage`]);

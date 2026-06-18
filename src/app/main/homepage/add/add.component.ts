@@ -2,6 +2,8 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { CropResult } from 'src/app/share/image-cropper/image-cropper.component';
 import { HttpService } from 'src/app/share/service/http.service';
+import { environment } from 'src/environments/environment';
+import { HomeCarouselResponseData } from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-add',
@@ -94,8 +96,8 @@ export class AddComponent {
     formData.append('picture', this.uploadData.picture);
 
     this.http
-      .postForm(
-        'http://localhost:5133/api/Carousel/CreateCarouselPictures',
+      .postForm<HomeCarouselResponseData>(
+        `${environment.apiUrl}Carousel/CreateCarouselPictures`,
         formData
       )
       .subscribe((x) => {});

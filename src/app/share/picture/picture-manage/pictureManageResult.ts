@@ -1,15 +1,5 @@
-export interface pictureManageResult {
-  directory: string;
-  images: pictureManageResultContent[];
-}
-
-export interface pictureManageResultContent {
-  url: string;
-  smallImageUrl: string;
-  directories: string;
-  imageName: string;
-  smallImageName: string;
-}
+export type { S3PictureModel as pictureManageResult } from 'src/app/core/api/models';
+export type { S3PictureModel as pictureManageResultContent } from 'src/app/core/api/models';
 
 export class ImageResult {
   base64URL: string = '';
