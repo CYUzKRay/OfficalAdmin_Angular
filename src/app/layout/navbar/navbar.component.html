@@ -4,16 +4,33 @@
     <h1>航泰砂布有限公司 後台管理系統</h1>
   </div>
   <div class="admin-nav">
-    <a href="#" class="admin-nav-link">儀表板</a>
-    <a href="#" class="admin-nav-link active">產品管理</a>
-    <a href="#" class="admin-nav-link">最新消息</a>
-    <a href="#" class="admin-nav-link">設定</a>
-    <div class="admin-user" onclick="toggleUserDropdown()">
+
+    <!-- 整站重新發布。存檔後本來就會自動發布,這顆是給「改了模板/樣式」或
+         自動發布失敗時人工重來用的 —— 也就是計畫裡說的人工復原手段。 -->
+    <div class="publish-box" [title]="publishTooltip">
+      <button
+        type="button"
+        class="publish-btn"
+        [class.is-busy]="isPublishing"
+        [disabled]="isPublishing"
+        (click)="publishSite()"
+      >
+        <i class="fas" [ngClass]="isPublishing ? 'fa-circle-notch fa-spin' : 'fa-cloud-upload-alt'"></i>
+        {{ publishLabel }}
+      </button>
+      <span
+        class="publish-hint"
+        [class.is-problem]="hasPublishProblem"
+        *ngIf="publishHint"
+      >{{ publishHint }}</span>
+    </div>
+
+    <div class="admin-user" (click)="toggleUserDropdown()">
       <div class="admin-avatar">管</div>
       <span>管理員</span>
       <i class="fas fa-chevron-down"></i>
-      <div class="user-dropdown" id="userDropdown">
-        <a href="javascript:void(0)" class="dropdown-item" onclick="logout()">
+      <div class="user-dropdown" id="userDropdown" [style.display]="isDropdownOpen ? 'block' : 'none'">
+        <a href="javascript:void(0)" class="dropdown-item" (click)="logout()">
           <i class="fas fa-sign-out-alt"></i>
           登出
         </a>

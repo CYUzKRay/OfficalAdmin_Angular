@@ -131,3 +131,69 @@
   margin-right: 8px;
   width: 16px;
 }
+
+/* ---------- 整站重新發布 ---------- */
+
+.publish-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  margin-right: 18px;
+  padding-right: 18px;
+  border-right: 1px solid var(--border-color);
+}
+
+.publish-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  background-color: var(--white);
+  color: var(--accent-color);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.publish-btn:hover:not(:disabled) {
+  background-color: var(--secondary-color);
+  border-color: var(--accent-color);
+}
+
+.publish-btn:disabled {
+  cursor: default;
+  opacity: 0.75;
+}
+
+/* 發布中要明顯到「不會有人再按一次」的程度 */
+.publish-btn.is-busy {
+  background-color: var(--secondary-color);
+  border-color: var(--accent-color);
+}
+
+/* 按鈕下方那行小字。預設是灰的,只有出事時才變紅 —— 平時不要搶注意力 */
+.publish-hint {
+  font-size: 12px;
+  color: var(--muted-color);
+  max-width: 260px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.publish-hint.is-problem {
+  color: var(--danger-color);
+  font-weight: 600;
+}
+
+@media (max-width: 900px) {
+  /* 窄螢幕留按鈕就好,小字擠掉會讓整列換行 */
+  .publish-hint {
+    display: none;
+  }
+}
