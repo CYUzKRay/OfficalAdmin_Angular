@@ -16,8 +16,12 @@ export class NavbarComponent implements OnInit, OnDestroy {
   /** null 代表還沒讀到狀態(剛進後台) */
   publishStatus: SitePublishStatus | null = null;
 
+  /** 有已儲存但還沒發布的變更(目前來自排序,那些端點刻意不自動發布) */
+  hasPendingChanges = false;
+
   private statusSub?: Subscription;
   private navSub?: Subscription;
+  private pendingSub?: Subscription;
 
   constructor(
     private router: Router,
@@ -27,6 +31,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.statusSub = this.sitePublish.status$.subscribe((s) => (this.publishStatus = s));
+    this.pendingSub = this.sitePublish.hasPendingChanges$.subscribe((p) => (this.hasPendingChanges = p));
     // 進後台先讀一次:發布也可能是別人觸發的,或是存檔後自動排入的
     this.sitePublish.refresh();
 
@@ -41,6 +46,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
     this.navSub?.unsubscribe();
+    this.pendingSub?.unsubscribe();
   }
 
   get isPublishing(): boolean {
@@ -68,6 +74,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
     if (this.isPublishing) {
       return s.trigger ? `${s.trigger}，約需 40 秒` : '約需 40 秒';
+    }
+
+    // 排序這類變更已經進資料庫但不會自動發布,要提醒操作者還沒送出去
+    if (this.hasPendingChanges) {
+      return '有已儲存但尚未發布的變更';
     }
 
     switch (s.phase) {

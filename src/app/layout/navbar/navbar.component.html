@@ -12,6 +12,7 @@
         type="button"
         class="publish-btn"
         [class.is-busy]="isPublishing"
+        [class.has-pending]="hasPendingChanges && !isPublishing"
         [disabled]="isPublishing"
         (click)="publishSite()"
       >
@@ -21,6 +22,7 @@
       <span
         class="publish-hint"
         [class.is-problem]="hasPublishProblem"
+        [class.is-pending]="hasPendingChanges && !isPublishing"
         *ngIf="publishHint"
       >{{ publishHint }}</span>
     </div>

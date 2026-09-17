@@ -197,3 +197,20 @@
     display: none;
   }
 }
+
+/* 有未發布的變更時,按鈕改為實心強調 —— 這時候按它才是有意義的動作 */
+.publish-btn.has-pending {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  color: var(--white);
+}
+
+.publish-btn.has-pending:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.publish-hint.is-pending {
+  color: var(--warning-color);
+  font-weight: 600;
+}
