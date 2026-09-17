@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { NavigationEnd, Router } from '@angular/router';
+import { Subscription, filter } from 'rxjs';
 import { HttpService } from '../../share/service/http.service';
 import { SitePublishService, SitePublishStatus } from '../../share/service/site-publish.service';
 import { environment } from '../../../environments/environment';
@@ -17,6 +17,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   publishStatus: SitePublishStatus | null = null;
 
   private statusSub?: Subscription;
+  private navSub?: Subscription;
 
   constructor(
     private router: Router,
@@ -28,10 +29,18 @@ export class NavbarComponent implements OnInit, OnDestroy {
     this.statusSub = this.sitePublish.status$.subscribe((s) => (this.publishStatus = s));
     // 進後台先讀一次:發布也可能是別人觸發的,或是存檔後自動排入的
     this.sitePublish.refresh();
+
+    // navbar 在版面裡,換頁不會重新初始化 —— 沒有這段的話「新增產品 → 存檔 → 返回列表」
+    // 之後狀態還停在進站時讀到的那一筆,要重整整頁才看得到自動發布已經排入。
+    // 存檔幾乎都伴隨一次導頁,用 NavigationEnd 補讀最省事也最貼合實際操作。
+    this.navSub = this.router.events
+      .pipe(filter((e): e is NavigationEnd => e instanceof NavigationEnd))
+      .subscribe(() => this.sitePublish.refresh());
   }
 
   ngOnDestroy(): void {
     this.statusSub?.unsubscribe();
+    this.navSub?.unsubscribe();
   }
 
   get isPublishing(): boolean {
