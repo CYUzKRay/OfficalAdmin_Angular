@@ -74,8 +74,8 @@
               <td>{{ news.date }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
+                  <button class="order-btn up-btn" (click)="editNewsSort(news.id, 'up')">▲</button>
+                  <button class="order-btn down-btn" (click)="editNewsSort(news.id, 'down')">▼</button>
                 </div>
               </td>
               <td>

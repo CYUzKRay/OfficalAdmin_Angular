@@ -6,6 +6,7 @@ import {
   NewListModel,
   NewsSearchParametersModel,
   NewsPaginationModel,
+  Response,
 } from 'src/app/core/api/models';
 
 @Component({
@@ -67,6 +68,30 @@ export class ManageComponent implements OnInit {
   editNews(newId?: string) {
     if (!newId) return;
     this.route.navigate([`main/news/add/${newId}`]);
+  }
+
+  /**
+   * 與相鄰一筆交換排序。
+   *
+   * 端點形狀跟產品那支不同:產品是 `EditProductSort/{id}/{direction}`,
+   * 消息是 `EditNewsSort/{direction}` + body 帶 id,這是既有合約不動它。
+   *
+   * 後端回 HTTP 200 + isSuccess false 代表已在最前/最後,不是錯誤,
+   * 把訊息顯示出來就好,不要當成失敗。
+   */
+  editNewsSort(newId: string | undefined, direction: 'up' | 'down') {
+    if (!newId) return;
+    this.http
+      .put<Response>(`${environment.apiUrl}News/EditNewsSort/${direction}`, {
+        id: newId,
+      })
+      .subscribe((res) => {
+        if (res?.isSuccess === false) {
+          alert(res.message ?? '無法再移動');
+          return;
+        }
+        this.shearchNews();
+      });
   }
 
   deleteNews(newId?: string) {
