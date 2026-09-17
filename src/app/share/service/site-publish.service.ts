@@ -1,5 +1,5 @@
 import { Injectable, OnDestroy } from '@angular/core';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, map, tap } from 'rxjs';
 import { HttpService } from './http.service';
 import { environment } from '../../../environments/environment';
 
@@ -21,6 +21,34 @@ export interface SitePublishStatus {
   errors: string[];
   /** 這一輪跑完還要再跑一次(發布途中又有人存檔) */
   hasQueuedRequest: boolean;
+  /**
+   * 有已儲存但尚未發布的變更(目前來源是排序)。
+   * **由後端保管**,所以重新整理頁面不會消失 —— 放前端的話重整就忘了,
+   * 操作者會以為什麼都沒發生,但資料庫其實已經變了。
+   */
+  hasUnpublishedChanges: boolean;
+}
+
+/** 對應後端的 SitePublishHistoryModel */
+export interface SitePublishHistoryItem {
+  id: string;
+  startedAt: string;
+  finishedAt: string | null;
+  durationSeconds: number;
+  trigger: string | null;
+  isSuccess: boolean;
+  fileCount: number;
+  uploadedCount: number;
+  deletedCount: number;
+  cdnInvalidation: 'Skipped' | 'Succeeded' | 'Failed';
+  errors: string[];
+}
+
+interface HistoryResponse {
+  data: SitePublishHistoryItem[];
+  code: number;
+  message: string;
+  isSuccess: boolean;
 }
 
 interface StatusResponse {
@@ -47,14 +75,12 @@ export class SitePublishService implements OnDestroy {
   /**
    * 有「已存進資料庫、但還沒發布到官網」的變更。
    *
-   * 排序端點刻意不自動觸發發布(調順序通常是連續按好幾次上下,每按一次就重產整站太吵),
-   * 所以那些動作要自己標記,由操作者決定什麼時候送出。
-   *
-   * 只存在記憶體:重新整理後歸零。代價是使用者可能忘記按送出,但那顆按鈕在 navbar
-   * 一直都在,而且下一次任何內容存檔都會自動帶著這些排序一起發布出去。
+   * **狀態在後端**,這裡只是把它從 status 導出來 —— 早期版本放在前端記憶體,
+   * 結果重新整理就消失,操作者會以為排序沒生效(但資料庫其實已經改了)。
    */
-  private readonly pendingSubject = new BehaviorSubject<boolean>(false);
-  readonly hasPendingChanges$ = this.pendingSubject.asObservable();
+  readonly hasPendingChanges$ = this.status$.pipe(
+    map((s) => !!s && s.hasUnpublishedChanges)
+  );
 
   private pollTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -67,18 +93,15 @@ export class SitePublishService implements OnDestroy {
   publish(): Observable<StatusResponse> {
     return this.http
       .postJson<StatusResponse>(`${environment.apiUrl}SitePublish/Publish`, {})
-      .pipe(
-        tap((res) => {
-          // 這次發布會帶上所有已存進資料庫的變更,包含那些排序
-          this.pendingSubject.next(false);
-          this.apply(res?.data);
-        })
-      );
+      .pipe(tap((res) => this.apply(res?.data)));
   }
 
-  /** 標記「有變更還沒發布」。排序這類不自動發布的動作成功後呼叫 */
-  markPendingChange(): void {
-    this.pendingSubject.next(true);
+  /** 官網發布紀錄,新到舊 */
+  history(take = 10): Observable<HistoryResponse> {
+    return this.http.get<HistoryResponse>(
+      `${environment.apiUrl}SitePublish/History`,
+      { take }
+    );
   }
 
   /** 讀一次目前狀態。進後台時呼叫一次,才知道是不是有別人觸發的發布正在跑 */

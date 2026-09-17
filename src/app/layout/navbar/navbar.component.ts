@@ -2,7 +2,11 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { HttpService } from '../../share/service/http.service';
-import { SitePublishService, SitePublishStatus } from '../../share/service/site-publish.service';
+import {
+  SitePublishHistoryItem,
+  SitePublishService,
+  SitePublishStatus,
+} from '../../share/service/site-publish.service';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -18,6 +22,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
 
   /** 有已儲存但還沒發布的變更(目前來自排序,那些端點刻意不自動發布) */
   hasPendingChanges = false;
+
+  /** 發布紀錄面板 */
+  isHistoryOpen = false;
+  history: SitePublishHistoryItem[] = [];
+  isHistoryLoading = false;
 
   private statusSub?: Subscription;
   private navSub?: Subscription;
@@ -90,7 +99,8 @@ export class NavbarComponent implements OnInit, OnDestroy {
         if (s.cdnInvalidation === 'Failed') {
           return '已上傳，但 CDN 快取未清除，官網可能仍顯示舊內容';
         }
-        return `已發布 ${s.uploadedCount} 個檔案${this.finishedAtText(s)}`;
+        // 操作者最想知道的是「線上這版是什麼時候的」,所以時間放前面
+        return `最近發布 ${this.formatTime(s.finishedAt)}`;
       default:
         return '';
     }
@@ -103,6 +113,43 @@ export class NavbarComponent implements OnInit, OnDestroy {
       return '';
     }
     return s.errors.join('\n');
+  }
+
+  /** 展開／收合發布紀錄。每次展開都重讀,不快取 —— 這是低頻操作,拿最新的比較實在 */
+  toggleHistory(): void {
+    this.isHistoryOpen = !this.isHistoryOpen;
+    if (!this.isHistoryOpen) {
+      return;
+    }
+
+    this.isHistoryLoading = true;
+    this.sitePublish.history(10).subscribe({
+      next: (res) => {
+        this.history = res?.data ?? [];
+        this.isHistoryLoading = false;
+      },
+      error: () => {
+        this.history = [];
+        this.isHistoryLoading = false;
+      },
+    });
+  }
+
+  historyLine(item: SitePublishHistoryItem): string {
+    if (!item.isSuccess) {
+      return `失敗：${item.errors[0] ?? '原因不明'}`;
+    }
+    const cdn = item.cdnInvalidation === 'Failed' ? '，CDN 快取未清除' : '';
+    return `${item.uploadedCount} 個檔案，${item.durationSeconds} 秒${cdn}`;
+  }
+
+  formatTime(iso: string | null): string {
+    if (!iso) {
+      return '—';
+    }
+    const d = new Date(iso);
+    const pad = (n: number) => `${n}`.padStart(2, '0');
+    return `${pad(d.getMonth() + 1)}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
   }
 
   publishSite(): void {
@@ -133,13 +180,4 @@ export class NavbarComponent implements OnInit, OnDestroy {
     }
   }
 
-  private finishedAtText(s: SitePublishStatus): string {
-    if (!s.finishedAt) {
-      return '';
-    }
-    const d = new Date(s.finishedAt);
-    const hh = `${d.getHours()}`.padStart(2, '0');
-    const mm = `${d.getMinutes()}`.padStart(2, '0');
-    return `（${hh}:${mm}）`;
-  }
 }

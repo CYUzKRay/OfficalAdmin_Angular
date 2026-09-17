@@ -19,12 +19,39 @@
         <i class="fas" [ngClass]="isPublishing ? 'fa-circle-notch fa-spin' : 'fa-cloud-upload-alt'"></i>
         {{ publishLabel }}
       </button>
-      <span
+      <!-- 狀態小字本身就是展開發布紀錄的入口:操作者想知道「線上這版多久以前發的」時,
+           下一個問題通常是「那再之前呢」,放在同一個地方最順 -->
+      <button
+        type="button"
         class="publish-hint"
         [class.is-problem]="hasPublishProblem"
         [class.is-pending]="hasPendingChanges && !isPublishing"
         *ngIf="publishHint"
-      >{{ publishHint }}</span>
+        (click)="toggleHistory()"
+      >
+        {{ publishHint }}
+        <i class="fas" [ngClass]="isHistoryOpen ? 'fa-caret-up' : 'fa-caret-down'"></i>
+      </button>
+
+      <div class="publish-history" *ngIf="isHistoryOpen">
+        <div class="publish-history-head">發布紀錄</div>
+
+        <div class="publish-history-empty" *ngIf="isHistoryLoading">載入中…</div>
+        <div class="publish-history-empty" *ngIf="!isHistoryLoading && history.length === 0">
+          尚無發布紀錄
+        </div>
+
+        <div class="publish-history-row" *ngFor="let item of history">
+          <span class="ph-dot" [class.is-failed]="!item.isSuccess"></span>
+          <div class="ph-main">
+            <div class="ph-time">
+              {{ formatTime(item.finishedAt || item.startedAt) }}
+              <span class="ph-trigger" *ngIf="item.trigger">{{ item.trigger }}</span>
+            </div>
+            <div class="ph-detail">{{ historyLine(item) }}</div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <div class="admin-user" (click)="toggleUserDropdown()">

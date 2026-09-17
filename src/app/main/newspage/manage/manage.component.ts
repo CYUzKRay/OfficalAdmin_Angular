@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
 import { SitePublishService } from 'src/app/share/service/site-publish.service';
@@ -15,7 +16,7 @@ import {
   templateUrl: './manage.component.html',
   styleUrls: ['./manage.component.css'],
 })
-export class ManageComponent implements OnInit {
+export class ManageComponent implements OnInit, OnDestroy {
   newList: NewListModel[] = [];
   searchData: NewsSearchParametersModel = {
     classification: '',
@@ -28,8 +29,13 @@ export class ManageComponent implements OnInit {
   pageSize = 10;
   paginations: number[] = [];
   totalCount = 0;
-  /** 有調過順序但還沒送出。排序端點刻意不自動發布,由操作者調完再一次送出 */
+  /**
+   * 有已儲存但還沒發布的變更。**狀態來自後端**,所以重新整理頁面不會消失 ——
+   * 排序端點刻意不自動發布,由操作者調完再一次送出。
+   */
   hasPendingSort = false;
+
+  private pendingSub?: Subscription;
 
   /** 發布進行中,避免重複按 */
   isPublishing = false;
@@ -40,7 +46,15 @@ export class ManageComponent implements OnInit {
     private sitePublish: SitePublishService,
   ) {}
   ngOnInit(): void {
+    this.pendingSub = this.sitePublish.hasPendingChanges$.subscribe(
+      (p) => (this.hasPendingSort = p)
+    );
+    this.sitePublish.refresh();
     this.shearchNews();
+  }
+
+  ngOnDestroy(): void {
+    this.pendingSub?.unsubscribe();
   }
 
   setPage(index: number) {
@@ -100,8 +114,8 @@ export class ManageComponent implements OnInit {
             alert(res.message ?? '無法再移動');
             return;
           }
-          this.hasPendingSort = true;
-          this.sitePublish.markPendingChange();
+          // 待發布的標記由後端記錄,重讀狀態把它拿回來
+          this.sitePublish.refresh();
           this.shearchNews();
         },
         error: () => alert('排序失敗,請稍後再試。'),
@@ -115,7 +129,6 @@ export class ManageComponent implements OnInit {
     this.sitePublish.publish().subscribe({
       next: () => {
         this.isPublishing = false;
-        this.hasPendingSort = false;
       },
       error: () => {
         this.isPublishing = false;
