@@ -434,6 +434,11 @@ export class ImageCropperComponent implements OnInit, OnDestroy {
       const img = new Image();
       img.onload = () => {
         try {
+          // canvas 預設透明。輸出 JPEG 不支援透明,不先鋪白底的話原圖若有透明區域
+          // 會變成黑色。輪播圖是照片,鋪白底是安全的。
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, cropWidth, cropHeight);
+
           ctx.drawImage(
             img,
             cropX,
@@ -446,7 +451,11 @@ export class ImageCropperComponent implements OnInit, OnDestroy {
             cropHeight
           );
 
-          this.croppedImage = canvas.toDataURL();
+          // **一定要指定格式與品質。** 無參數的 toDataURL() 輸出 PNG(無損),
+          // 一張 1920×600 的照片裁完可以到十幾 MB,直接撞上後端 10MB 上限 ——
+          // 而且那個失敗在畫面上看起來就像「按了沒反應」。
+          // JPEG 0.9 對照片而言肉眼幾乎無差,體積通常只有 PNG 的十分之一。
+          this.croppedImage = canvas.toDataURL('image/jpeg', 0.9);
 
           const result: CropResult = {
             original: this.uploadedImage!,

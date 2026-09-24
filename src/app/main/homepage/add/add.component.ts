@@ -13,13 +13,18 @@ import { HomeCarouselResponseData } from 'src/app/core/api/models';
 export class AddComponent {
   @ViewChild('file') fileInput!: ElementRef;
   @ViewChild('carouselPreview') carouselPreview!: ElementRef;
-  selectedImageUrl: any;
+  selectedImageUrl: any = '';
+  showPreview: boolean = false;
   uploadData = {
     title: '',
+    subTitle: '',
     url: '',
     pictureStatus: true,
     picture: null as Blob | null,
   };
+
+  /** 送出中,避免連按造成重複建立 */
+  isSaving = false;
   constructor(private route: Router, private http: HttpService) {}
 
   deviceTemplate = [
@@ -47,7 +52,7 @@ export class AddComponent {
   ];
 
   Change() {
-    this.route.navigate(['main/home/preview']);
+    this.showPreview = true;
   }
   OpenFileUpload() {
     this.fileInput.nativeElement.click();
@@ -69,6 +74,10 @@ export class AddComponent {
     }
   }
 
+  ImageUploaded(imageUrl: string) {
+    this.selectedImageUrl = imageUrl;
+  }
+
   PreviewImage($event: CropResult) {
     // console.log($event);
     this.selectedImageUrl = $event.cropped;
@@ -85,21 +94,42 @@ export class AddComponent {
   }
 
   Save() {
+    if (this.isSaving) {
+      return;
+    }
+    if (!this.uploadData.title) {
+      alert('請填寫標題');
+      return;
+    }
     if (!this.uploadData.picture) {
       alert('請先選擇圖片');
       return;
     }
     let formData = new FormData();
     formData.append('title', this.uploadData.title);
+    formData.append('subTitle', this.uploadData.subTitle);
     formData.append('url', this.uploadData.url);
     formData.append('status', this.uploadData.pictureStatus ? 'true' : 'false');
     formData.append('picture', this.uploadData.picture);
 
+    this.isSaving = true;
     this.http
       .postForm<HomeCarouselResponseData>(
         `${environment.apiUrl}Carousel/CreateCarouselPictures`,
         formData
       )
-      .subscribe((x) => {});
+      .subscribe({
+        next: () => {
+          this.isSaving = false;
+          alert('儲存成功');
+          this.route.navigate(['/main/home/manage']);
+        },
+        // 原本只有成功回呼 —— 後端回 400(例如圖片超過 10MB)時畫面完全沒反應,
+        // 看起來就像「送不出去」。錯誤一定要讓操作者看到。
+        error: (err) => {
+          this.isSaving = false;
+          alert(err?.error?.message ?? '儲存失敗,請稍後再試。');
+        },
+      });
   }
 }
