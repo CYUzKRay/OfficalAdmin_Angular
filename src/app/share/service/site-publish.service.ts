@@ -66,8 +66,20 @@ interface StatusResponse {
  */
 @Injectable({ providedIn: 'root' })
 export class SitePublishService implements OnDestroy {
-  /** 發布中時的輪詢間隔。實測一次發布約 35–40 秒,兩秒一次夠即時又不會太吵 */
-  private static readonly POLL_INTERVAL_MS = 2000;
+  /** 發布中的輪詢間隔。實測一次發布約 10–40 秒,兩秒一次夠即時 */
+  private static readonly BUSY_POLL_MS = 2000;
+
+  /**
+   * 閒置時的輪詢間隔。
+   *
+   * **沒有這個的話 navbar 會看不到「不是自己按的」發布** —— 存檔、推薦商品異動
+   * 都會自動觸發發布,但那些動作發生在別的頁面元件裡,navbar 不會收到通知,
+   * 於是右上角一直停在舊狀態,操作者以為沒發布。
+   *
+   * 原本靠換頁時補讀,但停在同一頁操作就漏掉了。十五秒一次的小 GET,
+   * 對單人使用的後台完全不是負擔。
+   */
+  private static readonly IDLE_POLL_MS = 15000;
 
   private readonly statusSubject = new BehaviorSubject<SitePublishStatus | null>(null);
   readonly status$ = this.statusSubject.asObservable();
@@ -123,16 +135,15 @@ export class SitePublishService implements OnDestroy {
 
     // hasQueuedRequest 也要看:發布途中又有人存檔時還有下一輪,
     // 只看 isBusy 會在兩輪之間閃一下「完成」再變回「發布中」
-    if (status.isBusy || status.hasQueuedRequest) {
-      this.schedulePoll();
-    } else {
-      this.stopPolling();
-    }
+    const busy = status.isBusy || status.hasQueuedRequest;
+    this.schedulePoll(
+      busy ? SitePublishService.BUSY_POLL_MS : SitePublishService.IDLE_POLL_MS
+    );
   }
 
-  private schedulePoll(): void {
+  private schedulePoll(delayMs: number): void {
     this.stopPolling();
-    this.pollTimer = setTimeout(() => this.refresh(), SitePublishService.POLL_INTERVAL_MS);
+    this.pollTimer = setTimeout(() => this.refresh(), delayMs);
   }
 
   private stopPolling(): void {

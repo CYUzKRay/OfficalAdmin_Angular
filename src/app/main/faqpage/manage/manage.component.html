@@ -1,1 +1,62 @@
-<p>manage works!</p>
+<div class="admin-container">
+  <div class="admin-content">
+    <div class="content-section">
+      <div class="section-header">
+        <h2>常見問題管理</h2>
+        <app-publish-pending></app-publish-pending>
+        <button class="add-btn" routerLink="../add">新增問題</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th width="10%">排序編號</th>
+              <th width="40%">問題內容</th>
+              <th width="15%">排序操作</th>
+              <th width="15%">狀態</th>
+              <th width="20%">操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let faq of faqList; let i = index">
+              <td>{{ faq.orders }}</td>
+              <td class="news-title-cell">
+                <div class="news-title">{{ faq.question }}</div>
+              </td>
+              <td>
+                <div class="order-control">
+                  <button class="order-btn up-btn" (click)="moveUp(i)" [disabled]="i === 0">▲</button>
+                  <button class="order-btn down-btn" (click)="moveDown(i)" [disabled]="i === faqList.length - 1">▼</button>
+                </div>
+              </td>
+              <td>
+                <div 
+                  class="status-badge" 
+                  [ngClass]="faq.status ? 'active' : 'inactive'"
+                  (click)="toggleStatus(faq)"
+                  style="cursor: pointer;"
+                >
+                  {{ faq.status ? "顯示" : "隱藏" }}
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn" (click)="editFaq(faq.id)">
+                    編輯
+                  </button>
+                  <button class="delete-btn" (click)="deleteFaq(faq.id)">
+                    刪除
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="faqList.length === 0">
+              <td colspan="5" style="text-align: center; padding: 20px;">尚無常見問題資料</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>

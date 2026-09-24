@@ -46,20 +46,7 @@
       <div class="section-header">
         <h2>消息列表</h2>
 
-        <!-- 排序不會自動發布到官網(連續調整時每次都重產太吵),調完再一次送出。
-             沒有待送出的變更時整塊不顯示,避免變成永遠亮著的裝飾。 -->
-        <div class="pending-sort" *ngIf="hasPendingSort">
-          <span class="pending-sort-hint">順序已儲存,尚未更新到官網</span>
-          <button
-            type="button"
-            class="pending-sort-btn"
-            [disabled]="isPublishing"
-            (click)="publishSortChanges()"
-          >
-            <i class="fas" [ngClass]="isPublishing ? 'fa-circle-notch fa-spin' : 'fa-cloud-upload-alt'"></i>
-            {{ isPublishing ? '送出中…' : '送出並更新官網' }}
-          </button>
-        </div>
+        <app-publish-pending></app-publish-pending>
       </div>
 
       <div class="table-container">

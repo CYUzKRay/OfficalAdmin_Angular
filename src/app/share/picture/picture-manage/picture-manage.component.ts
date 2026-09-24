@@ -13,7 +13,6 @@ import {
   StringIReadOnlyListResponseData,
   ImagePaginationModelResponseData,
 } from 'src/app/core/api/models';
-import { ImageResult } from './pictureManageResult';
 
 export interface awsImageUploadContent {
   title: string;
@@ -29,7 +28,7 @@ export class PictureManageComponent implements OnInit {
   @ViewChild('fileInput') fileInputRef!: ElementRef;
   @Output() imageUpload = new EventEmitter<awsImageUploadContent>();
   @Output() error = new EventEmitter<string>();
-  @Output() imageUrlResult = new EventEmitter<ImageResult>();
+  @Output() imageUrlResult = new EventEmitter<string>();
 
   orginialimage: Blob | null = null;
   title: string | null = null;
@@ -80,33 +79,9 @@ export class PictureManageComponent implements OnInit {
     this.loadImages();
   }
 
+  // 後端回傳的已是 CloudFront 永久網址,可直接寫進內文,不需要再轉 base64
   copyPhotoUrl(photo: S3PictureModel) {
-    // photo.url
-    this.imageUrlToBase64(photo.url!).then((base64) => {
-      // navigator.clipboard.writeText(base64);
-      var result = new ImageResult(base64, photo.url!);
-      this.imageUrlResult.emit(result);
-      console.log(result);
-    });
-  }
-
-  imageUrlToBase64(url: string) {
-    return new Promise<string>((resolve, reject) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous'; //⚠️ 必須加，否則會 CORS 報錯
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx!.drawImage(img, 0, 0);
-
-        const base64 = canvas.toDataURL('image/png');
-        resolve(base64);
-      };
-      img.onerror = reject;
-      img.src = url;
-    });
+    this.imageUrlResult.emit(photo.url!);
   }
 
   deletePhoto(photo: S3PictureModel) {

@@ -10,6 +10,7 @@ import { PictureManageComponent } from './picture/picture-manage/picture-manage.
 import { PaginationComponent } from './pagination/pagination.component';
 import { LoadingComponent } from './loading/loading.component';
 import { ModalComponent } from './modal/modal.component';
+import { PublishPendingComponent } from './publish-pending/publish-pending.component';
 
 let exportComponents = [
   ImageCropperComponent,
@@ -18,6 +19,7 @@ let exportComponents = [
   PaginationComponent,
   LoadingComponent,
   ModalComponent,
+  PublishPendingComponent,
 ];
 let exportModules = [FormsModule, HttpClientModule];
 @NgModule({

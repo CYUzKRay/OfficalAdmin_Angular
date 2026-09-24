@@ -73,8 +73,16 @@ export class EditorComponent implements OnInit, ControlValueAccessor {
               this.add('application-grid', '應用場景', '插入應用場景網格');
             },
             onClick: (value: any) => {
+              // 佔位圖:插入後請用「圖庫」複製網址,再以編輯器的「插入圖片」替換。
+              // 不可寫死任何 S3 網址,舊版曾內嵌預簽名網址,插進去就是死圖。
               var img =
-                'https://hatai-official.s3.ap-east-2.amazonaws.com/products/%E5%B0%8F%E5%B8%B6%E5%9C%96%E7%89%87.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=ASIAXJDDDUWYKKOTGLB3%2F20251018%2Fap-east-2%2Fs3%2Faws4_request&X-Amz-Date=20251018T014002Z&X-Amz-Expires=300&X-Amz-Security-Token=IQoJb3JpZ2luX2VjEA4aCWFwLWVhc3QtMiJIMEYCIQCxnBNYavRx0QFlojdq1kxuHTdNhapEvqpjhmxNCISPqQIhAM7C5w9NnoZKjZkrcLWm5ShRHmznQCIxCJXiK93FA9QXKuMCCLP%2F%2F%2F%2F%2F%2F%2F%2F%2F%2FwEQARoMNTAwNTcxNTQ3MDU2Igw3QnUTFXu07BZzdpIqtwK0QXEKkA9V5AJmCIlj5OLOITfEwXyvfdGACc5s1E0Fam64MbRlPeYsk7LqCUlt%2BuT1pvK3XSiXAIxcKhNjGsbwcideNXt7M46zAVMDEyFmHX%2BUPj1terHeGOu%2FkOe32GHFY%2BJGGjMlRsp77396qwaaH1kt9ksnCHHp2r3Zt11mHoZag84hG9t5Ojv4fx1c3fhzrpQMJAZHM8jDAjs2CyrsKncojekeqhjLm7KxeQE6oVZWhR8tZV9Q9CdS2mm1g%2FnH4HMSwsy%2Bb%2BlN57LteQFDEY6P9ecfSNR%2FbwkAhOHneqEMPBEHv5gDxbXsjwwB0QTUmv4jWiO7ES4GbMLjwDSvPvzGS4yjp%2Bw6gqddjbnr4M9%2FGl2qHqeyBu%2BmZp%2BOuwxLB4ln1DzMpnvyJ1nVZeyAJ0AxR48HljCL38vHBjqsAuO%2BVH4TqMA7D7%2BWhQ1LW26ALlFfQee1PsDIz%2BZEVDnjDxcuwg3bchBtVz%2FWEhfouxo%2FdxYwZweV6VoDUC8oEgq9%2F32AdYHzZs8pLeawrTkqJkNPf%2BCtSUcroqwHVrCg7oRfTUF77MmoWv5cvoDiAhJVtPW2EiRtg%2FWgT0d8FCRIfBSzTeGUFfs2Gf6Gj7d7y0m5wZDcgi9jxO7gzpRL7Vt1X4ePAnVUWpHjSUBGyDLzlkEK%2FxB3kpOcTv5CX93KLWfpB3rDTthkfmID4GXnRfF2IsYr6U1SGTJ1iIrvu8sm1aRrkamwUvcFlaseOruxnGCI6%2Bv1GCD3NloD5BNXLIo%2BPh6uxUEh6V2LFPAZdOeVCmty75Q817Fs4imY3xWrMeNC0WI8IF909%2FOipA%3D%3D&X-Amz-Signature=3f7d1bc6b2d408f4fd4e6dc4d1da4df4a18db4ae4788ae9af14b73be10035e1d&X-Amz-SignedHeaders=host&response-content-disposition=inline';
+                'data:image/svg+xml;charset=utf-8,' +
+                encodeURIComponent(
+                  '<svg xmlns="http://www.w3.org/2000/svg" width="480" height="320">' +
+                    '<rect width="480" height="320" fill="#E2E5E8"/>' +
+                    '<text x="240" y="168" font-family="sans-serif" font-size="20" fill="#6B7280" text-anchor="middle">Replace with image</text>' +
+                    '</svg>'
+                );
               switch (value) {
                 case 'image-gallery':
                   editor.insertHtml(`

@@ -167,6 +167,7 @@
     <div class="content-section">
       <div class="section-header">
         <h2>產品列表管理</h2>
+        <app-publish-pending></app-publish-pending>
         <button class="add-btn" routerLink="/main/product/add">新增產品</button>
       </div>
 
@@ -224,7 +225,7 @@
               </td>
               <td><strong>{{ product.productName }}</strong></td>
               <td>{{ product.categoryName }}</td>
-              <td>-</td> <!-- Swagger didn't expose spec in ProductSearchResModel so we leave placeholder or remove -->
+              <td>{{ product.spec }}</td>
               <td>{{ product.orderType }}</td>
               <td>
                 <div class="order-control">
@@ -253,9 +254,9 @@
 
       <div class="pagination" *ngIf="getPageArray().length > 0">
         <button class="page-btn" [disabled]="pageIndex === 0" (click)="changePage(pageIndex - 1)">&lt;</button>
-        <button class="page-btn" 
-                *ngFor="let page of getPageArray()" 
-                [class.active]="page === pageIndex" 
+        <button class="page-btn"
+                *ngFor="let page of getPageArray()"
+                [class.active]="page === pageIndex"
                 (click)="changePage(page)">
           {{ page + 1 }}
         </button>

@@ -5,6 +5,7 @@
     <div class="content-section">
       <div class="section-header">
         <h2>首頁橫幅輪播圖管理</h2>
+        <app-publish-pending></app-publish-pending>
         <button class="add-btn" [routerLink]="'../add'">新增輪播圖</button>
       </div>
 
@@ -67,7 +68,8 @@
     <div class="content-section">
       <div class="section-header">
         <h2>產品區塊圖片管理</h2>
-        <button class="add-btn">新增產品區塊</button>
+        <app-publish-pending></app-publish-pending>
+        <button class="add-btn" (click)="openRecommendModal()">添加推薦商品</button>
       </div>
 
       <div class="table-container">
@@ -76,214 +78,48 @@
             <tr>
               <th>序號</th>
               <th>預覽圖</th>
+              <th>產品名稱</th>
               <th>產品類別</th>
               <th>描述</th>
               <th>排序</th>
-              <th>啟用狀態</th>
               <th>操作</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
+            <tr *ngFor="let prod of recommendedProducts; let i = index">
+              <td>{{ i + 1 }}</td>
               <td>
                 <img
-                  src="/api/placeholder/100/60"
-                  alt="砂布產品"
+                  [src]="prod.coverURL || '/assets/placeholder.jpg'"
+                  [alt]="prod.productName"
                   class="preview-img"
+                  style="max-width: 80px;"
                 />
               </td>
-              <td>砂布產品</td>
-              <td>專業研磨砂布，適用於各種金屬、木材、塑膠等材料</td>
+              <td>{{ prod.productName }}</td>
+              <td>{{ prod.categoryName }}</td>
+              <td>{{ prod.spec }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
+                  <button class="order-btn up-btn" (click)="moveRecommendUp(i)">▲</button>
+                  <button class="order-btn down-btn" (click)="moveRecommendDown(i)">▼</button>
                 </div>
               </td>
-              <td><div class="status-badge active">啟用</div></td>
               <td>
                 <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
+                  <button class="delete-btn" (click)="removeRecommend(prod)">移除</button>
                 </div>
               </td>
             </tr>
-            <tr>
-              <td>2</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="砂紙產品"
-                  class="preview-img"
-                />
-              </td>
-              <td>砂紙產品</td>
-              <td>多種規格砂紙，從粗磨到精細拋光</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="砂布環帶"
-                  class="preview-img"
-                />
-              </td>
-              <td>砂布環帶</td>
-              <td>適用於各種金屬、木材、塑料等材料的表面處理</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
+            <tr *ngIf="recommendedProducts.length === 0">
+              <td colspan="7" style="text-align: center; padding: 20px;">尚無推薦商品</td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- 應用領域管理 -->
-    <div class="content-section">
-      <div class="section-header">
-        <h2>應用領域圖片管理</h2>
-        <button class="add-btn">新增應用領域</button>
-      </div>
 
-      <div class="table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>序號</th>
-              <th>預覽圖</th>
-              <th>應用名稱</th>
-              <th>排序</th>
-              <th>啟用狀態</th>
-              <th>操作</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="工業應用"
-                  class="preview-img"
-                />
-              </td>
-              <td>工業應用</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="木工應用"
-                  class="preview-img"
-                />
-              </td>
-              <td>木工應用</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="金屬加工"
-                  class="preview-img"
-                />
-              </td>
-              <td>金屬加工</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>
-                <img
-                  src="/api/placeholder/100/60"
-                  alt="汽車製造"
-                  class="preview-img"
-                />
-              </td>
-              <td>汽車製造</td>
-              <td>
-                <div class="order-control">
-                  <button class="order-btn up-btn">▲</button>
-                  <button class="order-btn down-btn">▼</button>
-                </div>
-              </td>
-              <td><div class="status-badge active">啟用</div></td>
-              <td>
-                <div class="action-buttons">
-                  <button class="edit-btn">編輯</button>
-                  <button class="delete-btn">刪除</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -336,3 +172,37 @@
     </div>
   </div>
 </div>
+
+<!-- 添加推薦商品彈窗 -->
+<app-modal [isOpen]="isRecommendModalOpen" [title]="'選擇推薦商品'" (closeModal)="isRecommendModalOpen = false">
+  <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th width="10%">選取</th>
+          <th width="20%">預覽圖</th>
+          <th width="40%">產品名稱</th>
+          <th width="30%">產品類別</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let prod of sortedAllProducts">
+          <td>
+            <input type="checkbox" [checked]="isProductSelected(prod)" (change)="toggleProductSelection(prod, $event)" />
+          </td>
+          <td>
+             <img [src]="prod.coverURL || '/assets/placeholder.jpg'" class="preview-img" style="max-width: 50px;" />
+          </td>
+          <td>{{ prod.productName }}</td>
+          <td>{{ prod.categoryName }}</td>
+        </tr>
+        <tr *ngIf="allProducts.length === 0">
+           <td colspan="4" style="text-align: center; padding: 20px;">載入中或無產品...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="form-actions" style="margin-top: 15px; text-align: right;">
+    <button type="button" class="save-btn" (click)="confirmRecommendSelection()">確定</button>
+  </div>
+</app-modal>

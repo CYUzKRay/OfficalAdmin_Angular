@@ -1,0 +1,38 @@
+.pending-sort {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pending-sort-hint {
+  font-size: 13px;
+  color: var(--warning-color);
+  font-weight: 600;
+}
+
+.pending-sort-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border: 1px solid var(--primary-color);
+  border-radius: 4px;
+  background-color: var(--primary-color);
+  color: var(--white);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.pending-sort-btn:hover:not(:disabled) {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.pending-sort-btn:disabled {
+  cursor: default;
+  opacity: 0.7;
+}

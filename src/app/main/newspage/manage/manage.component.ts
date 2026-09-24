@@ -1,5 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
 import { SitePublishService } from 'src/app/share/service/site-publish.service';
@@ -16,7 +15,7 @@ import {
   templateUrl: './manage.component.html',
   styleUrls: ['./manage.component.css'],
 })
-export class ManageComponent implements OnInit, OnDestroy {
+export class ManageComponent implements OnInit {
   newList: NewListModel[] = [];
   searchData: NewsSearchParametersModel = {
     classification: '',
@@ -29,32 +28,14 @@ export class ManageComponent implements OnInit, OnDestroy {
   pageSize = 10;
   paginations: number[] = [];
   totalCount = 0;
-  /**
-   * 有已儲存但還沒發布的變更。**狀態來自後端**,所以重新整理頁面不會消失 ——
-   * 排序端點刻意不自動發布,由操作者調完再一次送出。
-   */
-  hasPendingSort = false;
-
-  private pendingSub?: Subscription;
-
-  /** 發布進行中,避免重複按 */
-  isPublishing = false;
-
   constructor(
     private route: Router,
     private http: HttpService,
     private sitePublish: SitePublishService,
   ) {}
   ngOnInit(): void {
-    this.pendingSub = this.sitePublish.hasPendingChanges$.subscribe(
-      (p) => (this.hasPendingSort = p)
-    );
     this.sitePublish.refresh();
     this.shearchNews();
-  }
-
-  ngOnDestroy(): void {
-    this.pendingSub?.unsubscribe();
   }
 
   setPage(index: number) {
@@ -120,21 +101,6 @@ export class ManageComponent implements OnInit, OnDestroy {
         },
         error: () => alert('排序失敗,請稍後再試。'),
       });
-  }
-
-  /** 把調好的順序送上官網。一次發布會帶上所有已存進資料庫的變更 */
-  publishSortChanges() {
-    if (this.isPublishing) return;
-    this.isPublishing = true;
-    this.sitePublish.publish().subscribe({
-      next: () => {
-        this.isPublishing = false;
-      },
-      error: () => {
-        this.isPublishing = false;
-        alert('無法排入發布作業,請確認後端服務是否正常。');
-      },
-    });
   }
 
   deleteNews(newId?: string) {

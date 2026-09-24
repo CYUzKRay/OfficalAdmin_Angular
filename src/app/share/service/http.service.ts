@@ -28,6 +28,10 @@ export class HttpService {
     return this.http.post<T>(url, data); // 不要手動設 Content-Type，瀏覽器會自己帶
   }
 
+  putForm<T>(url: string, data: Record<string, any>): Observable<T> {
+    return this.http.put<T>(url, data);
+  }
+
   // 如果需要 GET
   get<T>(url: string, params?: any): Observable<T> {
     return this.http.get<T>(url, { params });
