@@ -7,6 +7,8 @@ import {
   SearchCategoryModel,
   SearchCategoryModelListResponseData,
   Response as ApiResponse,
+  SearchHomeApplicationModel,
+  SearchHomeApplicationModelListResponseData,
 } from 'src/app/core/api/models';
 import { GritItem } from './gritItem';
 import { ImageItem } from './imageItem';
@@ -43,6 +45,11 @@ export class AddComponent implements OnInit, OnDestroy {
   modelNumber = '';
   specification = '';
   usage = '';
+
+  /** 可勾選的應用領域(含首頁未顯示的) */
+  applications: SearchHomeApplicationModel[] = [];
+  /** 推薦研磨場景:已勾選的應用領域 Id */
+  selectedApplicationIds: string[] = [];
   selectedMainCategoryId = '';
   selectedSubCategoryId = '';
 
@@ -66,6 +73,27 @@ export class AddComponent implements OnInit, OnDestroy {
       price: null,
     }));
     this.loadMainCategories();
+
+    this.loadApplications();
+  }
+
+  loadApplications(): void {
+    this.http
+      .get<SearchHomeApplicationModelListResponseData>(`${environment.apiUrl}Application/SearchApplications`)
+      .subscribe((res) => {
+        this.applications = res.data ?? [];
+      });
+  }
+
+  isApplicationSelected(id: string | undefined): boolean {
+    return !!id && this.selectedApplicationIds.includes(id);
+  }
+
+  toggleApplication(id: string | undefined, checked: boolean): void {
+    if (!id) return;
+    this.selectedApplicationIds = checked
+      ? [...this.selectedApplicationIds, id]
+      : this.selectedApplicationIds.filter((x) => x !== id);
   }
 
   loadMainCategories(): void {
@@ -341,6 +369,7 @@ export class AddComponent implements OnInit, OnDestroy {
     formData.append('ModelNumber', this.modelNumber);
     formData.append('Material', this.material);
     formData.append('Usage', this.usage);
+    this.selectedApplicationIds.forEach((id) => formData.append('ApplicationIds', id));
     formData.append('Specification', this.specification);
     formData.append('Description', this.productDescription);
     formData.append('CanOrder', String(this.can_order));

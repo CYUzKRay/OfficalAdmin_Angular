@@ -149,6 +149,24 @@
 
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">推薦研磨場景</label>
+          <div class="application-options">
+            <label class="application-option" *ngFor="let app of applications">
+              <input
+                type="checkbox"
+                [checked]="isApplicationSelected(app.id)"
+                (change)="toggleApplication(app.id, $any($event.target).checked)"
+              />
+              {{ app.title }}
+              <span class="application-hidden-hint" *ngIf="!app.status">(首頁未顯示)</span>
+            </label>
+            <span class="form-hint" *ngIf="applications.length === 0">尚無應用領域,請先到首頁管理新增</span>
+          </div>
+          <p class="form-hint">可複選,勾選的場景會顯示在官網產品頁的「適用場景」</p>
+        </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label class="form-label">產品描述</label>
           <app-editor
             [(ngModel)]="productDescription"

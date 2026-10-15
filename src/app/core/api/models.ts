@@ -21,6 +21,7 @@ export type { Product } from './models/product';
 export type { ProductSpec } from './models/product-spec';
 export type { ProductCategory } from './models/product-category';
 export type { ProductCategoryResponseData } from './models/product-category-response-data';
+export type { ProductApplicationModel } from './models/product-application-model';
 export type { ProductDetailModel } from './models/product-detail-model';
 export type { ProductDetailModelResponseData } from './models/product-detail-model-response-data';
 export type { ProductPaginationModel } from './models/product-pagination-model';
