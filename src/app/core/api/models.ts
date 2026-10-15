@@ -32,6 +32,8 @@ export type { Response } from './models/response';
 export type { S3PictureModel } from './models/s-3-picture-model';
 export type { SearchCategoryModel } from './models/search-category-model';
 export type { SearchCategoryModelListResponseData } from './models/search-category-model-list-response-data';
+export type { SearchHomeApplicationModel } from './models/search-home-application-model';
+export type { SearchHomeApplicationModelListResponseData } from './models/search-home-application-model-list-response-data';
 export type { SearchHomeCarouselModel } from './models/search-home-carousel-model';
 export type { SearchHomeCarouselModelListResponseData } from './models/search-home-carousel-model-list-response-data';
 export type { StringIReadOnlyListResponseData } from './models/string-i-read-only-list-response-data';

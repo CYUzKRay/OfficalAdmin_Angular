@@ -31,12 +31,16 @@
                   <button
                     class="order-btn up-btn"
                     (click)="editCarouselSort('up', carousel)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('carousel:' + carousel.id + ':up')"
                   >
                     ▲
                   </button>
                   <button
                     class="order-btn down-btn"
                     (click)="editCarouselSort('down', carousel)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('carousel:' + carousel.id + ':down')"
                   >
                     ▼
                   </button>
@@ -58,6 +62,81 @@
                   </button>
                 </div>
               </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 應用領域管理 -->
+    <div class="content-section">
+      <div class="section-header">
+        <h2>應用領域管理</h2>
+        <app-publish-pending></app-publish-pending>
+        <button class="add-btn" (click)="openApplicationModal()">新增應用領域</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>序號</th>
+              <th>背景圖</th>
+              <th>英文標題</th>
+              <th>中文標題</th>
+              <th>中文描述</th>
+              <th>排序</th>
+              <th>啟用狀態</th>
+              <th>操作</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let app of applications">
+              <td>{{ app.index }}</td>
+              <td>
+                <img [src]="app.image" [alt]="app.title" class="preview-img" style="max-width: 80px;" />
+              </td>
+              <td>{{ app.titleEn }}</td>
+              <td>{{ app.title }}</td>
+              <td>{{ app.description }}</td>
+              <td>
+                <div class="order-control">
+                  <button
+                    class="order-btn up-btn"
+                    (click)="editApplicationSort('up', app)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('application:' + app.id + ':up')"
+                  >
+                    ▲
+                  </button>
+                  <button
+                    class="order-btn down-btn"
+                    (click)="editApplicationSort('down', app)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('application:' + app.id + ':down')"
+                  >
+                    ▼
+                  </button>
+                </div>
+              </td>
+              <td>
+                <div
+                  (click)="changeApplicationStatus(app)"
+                  class="status-badge"
+                  [ngClass]="app.status ? 'active' : 'inactive'"
+                >
+                  {{ app.status ? "啟用" : "隱藏" }}
+                </div>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="edit-btn" (click)="openApplicationModal(app)">編輯</button>
+                  <button class="delete-btn" (click)="deleteApplication(app)">刪除</button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="applications.length === 0">
+              <td colspan="8" style="text-align: center; padding: 20px;">尚無應用領域</td>
             </tr>
           </tbody>
         </table>
@@ -101,8 +180,8 @@
               <td>{{ prod.spec }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn" (click)="moveRecommendUp(i)">▲</button>
-                  <button class="order-btn down-btn" (click)="moveRecommendDown(i)">▼</button>
+                  <button class="order-btn up-btn" (click)="moveRecommendUp(i)" [disabled]="sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('rec:' + i + ':up')">▲</button>
+                  <button class="order-btn down-btn" (click)="moveRecommendDown(i)" [disabled]="sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('rec:' + i + ':down')">▼</button>
                 </div>
               </td>
               <td>
@@ -204,5 +283,57 @@
   </div>
   <div class="form-actions" style="margin-top: 15px; text-align: right;">
     <button type="button" class="save-btn" (click)="confirmRecommendSelection()">確定</button>
+  </div>
+</app-modal>
+
+<!-- 新增/編輯應用領域彈窗 -->
+<app-modal
+  [isOpen]="isApplicationModalOpen"
+  [title]="editingApplication ? '編輯應用領域' : '新增應用領域'"
+  (closeModal)="isApplicationModalOpen = false"
+>
+  <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+    <form class="edit-form" (submit)="$event.preventDefault()">
+      <div class="form-group">
+        <label for="application-title-en">英文標題 <span class="required">*</span></label>
+        <input type="text" id="application-title-en" name="titleEn" maxlength="50"
+          [(ngModel)]="applicationForm.titleEn" placeholder="例:Metalworking" />
+      </div>
+      <div class="form-group">
+        <label for="application-title">中文標題 <span class="required">*</span></label>
+        <input type="text" id="application-title" name="title" maxlength="50"
+          [(ngModel)]="applicationForm.title" placeholder="例:金屬加工" />
+      </div>
+      <div class="form-group">
+        <label for="application-description">中文描述</label>
+        <textarea id="application-description" name="description" maxlength="200"
+          [(ngModel)]="applicationForm.description" placeholder="例:去毛邊、表面研磨與髮絲紋處理"></textarea>
+      </div>
+      <div class="form-group" *ngIf="!editingApplication">
+        <label>
+          <input type="checkbox" name="status" [(ngModel)]="applicationForm.status" />
+          新增後立即顯示於官網
+        </label>
+      </div>
+      <div class="form-group">
+        <label>背景圖 <span class="required" *ngIf="!editingApplication">*</span></label>
+        <div *ngIf="applicationPreview" style="margin-bottom: 10px;">
+          <img [src]="applicationPreview" alt="背景圖預覽" style="max-width: 200px; border-radius: 4px;" />
+          <div *ngIf="editingApplication && !applicationForm.picture" style="font-size: 12px; color: #888;">
+            目前的背景圖;不換圖就不用重新上傳
+          </div>
+        </div>
+        <app-image-cropper
+          *ngIf="isApplicationModalOpen"
+          [autoApplyCrop]="true"
+          [recommendedSize]="'800x800px'"
+          (cropApplied)="onApplicationCropped($event)"
+        ></app-image-cropper>
+      </div>
+    </form>
+  </div>
+  <div class="form-actions" style="margin-top: 15px; text-align: right;">
+    <button type="button" class="cancel-btn" (click)="isApplicationModalOpen = false">取消</button>
+    <button type="button" class="save-btn" [disabled]="isSavingApplication" (click)="saveApplication()">儲存</button>
   </div>
 </app-modal>
