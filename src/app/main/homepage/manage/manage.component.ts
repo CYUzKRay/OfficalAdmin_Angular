@@ -179,6 +179,7 @@ export class ManageComponent implements OnInit {
     formData.append('titleEn', form.titleEn.trim());
     formData.append('title', form.title.trim());
     formData.append('description', form.description.trim());
+    formData.append('status', form.status ? 'true' : 'false');
     if (form.picture) {
       formData.append('picture', form.picture);
     }
@@ -191,7 +192,6 @@ export class ManageComponent implements OnInit {
         formData
       );
     } else {
-      formData.append('status', form.status ? 'true' : 'false');
       request = this.http.postForm<ApiResponse>(
         `${environment.apiUrl}Application/CreateApplication`,
         formData

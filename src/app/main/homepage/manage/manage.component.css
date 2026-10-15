@@ -1,0 +1,9 @@
+/* 「顯示/隱藏」、「啟用/隱藏」標籤可以點擊切換,游標要讓人看得出來 */
+.status-badge {
+  cursor: pointer;
+  user-select: none;
+}
+
+.status-badge:hover {
+  opacity: 0.8;
+}
