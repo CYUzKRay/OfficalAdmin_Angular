@@ -2113,6 +2113,13 @@
                     },
                     "description": "產品圖片(可多張,第一張會作為列表封面;jpeg/png/webp/gif,單張上限 10MB)"
                   },
+                  "PictureAlts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Pictures 各張的替代文字(alt,每張最多 150 字),**與 Pictures 同順序、同數量**;\r\n沒填的那張送空字串。數量對不上時全部忽略。官網沒填時用「產品名 產品圖 N」"
+                  },
                   "SubCategoryId": {
                     "type": "string",
                     "description": "所屬次分類 Id(產品必須掛在次分類底下)",
@@ -2167,6 +2174,9 @@
                   "style": "form"
                 },
                 "Pictures": {
+                  "style": "form"
+                },
+                "PictureAlts": {
                   "style": "form"
                 },
                 "SubCategoryId": {
@@ -2340,6 +2350,13 @@
                     },
                     "description": "要保留的現有圖片 Id 清單。\r\n不在清單內的現有圖片會從 S3 和資料庫刪除。\r\nPictures 欄位則承載本次要新增的圖片。"
                   },
+                  "KeepPictureAlts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "保留圖片的替代文字,**與 KeepPictureIds 同順序、同數量**。\r\n數量對不上(例如舊版後台沒送)時不動既有 alt —— 避免整份覆寫把資料清空"
+                  },
                   "Name": {
                     "maxLength": 50,
                     "type": "string",
@@ -2425,6 +2442,13 @@
                     },
                     "description": "產品圖片(可多張,第一張會作為列表封面;jpeg/png/webp/gif,單張上限 10MB)"
                   },
+                  "PictureAlts": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "description": "Pictures 各張的替代文字(alt,每張最多 150 字),**與 Pictures 同順序、同數量**;\r\n沒填的那張送空字串。數量對不上時全部忽略。官網沒填時用「產品名 產品圖 N」"
+                  },
                   "SubCategoryId": {
                     "type": "string",
                     "description": "所屬次分類 Id(產品必須掛在次分類底下)",
@@ -2437,6 +2461,9 @@
                   "style": "form"
                 },
                 "KeepPictureIds": {
+                  "style": "form"
+                },
+                "KeepPictureAlts": {
                   "style": "form"
                 },
                 "Name": {
@@ -2485,6 +2512,9 @@
                   "style": "form"
                 },
                 "Pictures": {
+                  "style": "form"
+                },
+                "PictureAlts": {
                   "style": "form"
                 },
                 "SubCategoryId": {
@@ -4280,6 +4310,12 @@
             "minLength": 0,
             "type": "string"
           },
+          "alt": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
           "product": {
             "$ref": "#/components/schemas/Product"
           }
@@ -4296,6 +4332,11 @@
           "url": {
             "type": "string",
             "description": "CloudFront 永久網址",
+            "nullable": true
+          },
+          "alt": {
+            "type": "string",
+            "description": "替代文字;沒填時為 null",
             "nullable": true
           }
         },

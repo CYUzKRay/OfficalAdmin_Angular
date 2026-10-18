@@ -162,6 +162,7 @@ export class AddComponent implements OnInit, OnDestroy {
             previewUrl: p.url || '',
             isMain: index === 0,
             originalId: p.id,
+            alt: p.alt || '',
           }));
         }
 
@@ -392,6 +393,7 @@ export class AddComponent implements OnInit, OnDestroy {
           file,
           previewUrl: URL.createObjectURL(file),
           isMain: this.images.length === 0,
+          alt: '',
         },
       ];
     }
@@ -425,10 +427,6 @@ export class AddComponent implements OnInit, OnDestroy {
 
   trackImageById(_: number, item: ImageItem): number {
     return item.id;
-  }
-
-  getFiles(): File[] {
-    return this.images.map((i) => i.file).filter((f): f is File => !!f);
   }
 
   // ════════════════════════════════════════
@@ -484,10 +482,13 @@ export class AddComponent implements OnInit, OnDestroy {
     if (this.isEditMode && this.productId) {
       formData.append('ProductId', this.productId);
       this.images.forEach((img) => {
+        // alt 跟著 id / 檔案在同一個迴圈送,後端靠順序一一對應
         if (img.originalId) {
           formData.append('KeepPictureIds', img.originalId);
+          formData.append('KeepPictureAlts', img.alt.trim());
         } else if (img.file) {
           formData.append('Pictures', img.file);
+          formData.append('PictureAlts', img.alt.trim());
         }
       });
 
@@ -504,8 +505,12 @@ export class AddComponent implements OnInit, OnDestroy {
           }
         });
     } else {
-      this.getFiles().forEach((file) => {
-        formData.append('Pictures', file);
+      // alt 跟著檔案在同一個迴圈送,後端靠順序一一對應
+      this.images.forEach((img) => {
+        if (img.file) {
+          formData.append('Pictures', img.file);
+          formData.append('PictureAlts', img.alt.trim());
+        }
       });
 
       this.http

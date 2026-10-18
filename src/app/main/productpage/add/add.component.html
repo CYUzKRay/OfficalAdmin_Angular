@@ -467,6 +467,25 @@
         </div>
       </div>
 
+      <!-- 替代文字:放在縮圖列外面,縮圖卡片可拖曳,輸入框放進去會跟拖曳打架 -->
+      <div class="alt-list" *ngIf="images.length > 0">
+        <p class="form-hint">
+          圖片替代文字(alt):描述圖片內容,給搜尋引擎與螢幕閱讀器看,最多 150 字。
+          未填寫時官網自動使用「產品名稱 產品圖 N」
+        </p>
+        <div class="alt-row" *ngFor="let img of images; trackBy: trackImageById; let i = index">
+          <img [src]="img.previewUrl" alt="" class="alt-thumb" />
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="img.alt"
+            [name]="'pictureAlt' + img.id"
+            maxlength="150"
+            [placeholder]="'第 ' + (i + 1) + ' 張,例如 NCA X871 氧化鋁砂布捲'"
+          />
+        </div>
+      </div>
+
       <!-- 底部資訊列 -->
       <div class="upload-footer" *ngIf="images.length > 0">
         <span class="footer-hint"

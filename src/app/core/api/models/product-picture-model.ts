@@ -12,4 +12,9 @@ export interface ProductPictureModel {
    * S3 預簽名網址(10 分鐘有效)
    */
   url?: string | null;
+
+  /**
+   * 替代文字;沒填時為 null
+   */
+  alt?: string | null;
 }
