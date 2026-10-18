@@ -26,8 +26,8 @@
               </td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn" (click)="moveUp(i)" [disabled]="i === 0">▲</button>
-                  <button class="order-btn down-btn" (click)="moveDown(i)" [disabled]="i === faqList.length - 1">▼</button>
+                  <button class="order-btn up-btn" (click)="moveUp(i)" [disabled]="i === 0 || sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('faq:' + i + ':up')">▲</button>
+                  <button class="order-btn down-btn" (click)="moveDown(i)" [disabled]="i === faqList.length - 1 || sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('faq:' + i + ':down')">▼</button>
                 </div>
               </td>
               <td>

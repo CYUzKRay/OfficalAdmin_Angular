@@ -1,7 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
+import { SitePublishService } from 'src/app/share/service/site-publish.service';
+import { SortLockService } from 'src/app/share/service/sort-lock.service';
 import { environment } from 'src/environments/environment';
+import { Response } from 'src/app/core/api/models';
 
 export interface FaqListModel {
   id: string;
@@ -32,7 +35,13 @@ export interface FaqModelResponseData {
 export class ManageComponent implements OnInit {
   faqList: FaqListModel[] = [];
 
-  constructor(private router: Router, private http: HttpService) {}
+  constructor(
+    private router: Router,
+    private http: HttpService,
+    private sitePublish: SitePublishService,
+    /** 模板要讀 isBusy / isBusyKey,所以是 public */
+    public sortLock: SortLockService
+  ) {}
 
   ngOnInit(): void {
     this.searchFaq();
@@ -60,6 +69,8 @@ export class ManageComponent implements OnInit {
       this.http
         .delete<any>(`${environment.apiUrl}Faq/DeleteFaq/${id}`)
         .subscribe(() => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           this.searchFaq();
         });
     }
@@ -76,6 +87,8 @@ export class ManageComponent implements OnInit {
           status: !res.data.status
         };
         this.http.postJson<any>(`${environment.apiUrl}Faq/CreateFaq`, updateData).subscribe(() => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           this.searchFaq();
         });
       }
@@ -83,20 +96,42 @@ export class ManageComponent implements OnInit {
   }
 
   moveUp(index: number) {
-    const faq = this.faqList[index];
-    this.http
-      .put<any>(`${environment.apiUrl}Faq/EditFaqSort/up`, { id: faq.id })
-      .subscribe(() => {
-        this.searchFaq();
-      });
+    this.move(index, 'up');
   }
 
   moveDown(index: number) {
+    this.move(index, 'down');
+  }
+
+  /**
+   * 與相鄰一筆交換排序。
+   *
+   * 後端回 HTTP 200 + isSuccess false 代表已在最前/最後,不是錯誤 ——
+   * 這是既有合約,顯示訊息就好,不要當失敗處理。
+   */
+  private move(index: number, direction: 'up' | 'down') {
     const faq = this.faqList[index];
-    this.http
-      .put<any>(`${environment.apiUrl}Faq/EditFaqSort/down`, { id: faq.id })
-      .subscribe(() => {
-        this.searchFaq();
+    if (!faq) return;
+
+    this.sortLock
+      .run(
+        `faq:${index}:${direction}`,
+        this.http.put<Response>(
+          `${environment.apiUrl}Faq/EditFaqSort/${direction}`,
+          { id: faq.id }
+        )
+      )
+      .subscribe({
+        next: (res) => {
+          if (res?.isSuccess === false) {
+            alert(res.message ?? '無法再移動');
+            return;
+          }
+          // 排序是延後發布,待發布標記由後端記錄,重讀狀態把它拿回來
+          this.sitePublish.refresh();
+          this.searchFaq();
+        },
+        error: (err) => alert(SortLockService.message(err)),
       });
   }
 }

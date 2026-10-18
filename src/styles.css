@@ -423,6 +423,45 @@ p {
   color: var(--accent-color);
 }
 
+/* 排序進行中:同一時間只允許一個排序請求,所以其餘排序按鈕一律 disabled。
+   規則放在 :hover 之後,否則滑過去還是會亮起來,看起來像可以按。 */
+.order-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background-color: var(--white);
+  border-color: var(--border-color);
+  color: inherit;
+}
+
+/* 被按的那一顆原地轉圈。
+   用 color: transparent 把 ▲▼ 藏起來而不是改 textContent,
+   這樣模板不用拆成 ngIf 兩個分支,按鈕尺寸也不會跳動。 */
+.order-btn.is-sorting {
+  color: transparent;
+  position: relative;
+}
+
+.order-btn.is-sorting::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 12px;
+  margin: -6px 0 0 -6px;
+  border: 2px solid rgba(0, 0, 0, 0.15);
+  /* 不用 currentColor,上面已經把 color 設成透明了 */
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: order-btn-spin 0.7s linear infinite;
+}
+
+@keyframes order-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 /* 分頁控制 */
 .pagination {
   display: flex;
@@ -475,6 +514,30 @@ p {
   z-index: 1000;
   align-items: center;
   justify-content: center;
+}
+
+/* 彈窗顯示控制。
+   必須跟 .modal 放在一起 —— 基底規則是全域的 display: none,
+   顯示規則卻只寫在某個元件的 css 裡的話,那條規則因為 Angular 的樣式作用域
+   只對那一頁生效,其他頁加了 .show 也永遠打不開,而且不會有任何錯誤訊息。
+   (問與答新增頁就是這樣壞掉的) */
+.modal.show {
+  display: flex;
+}
+
+.modal.show .modal-content {
+  animation: modal-slide-in 0.3s ease-out;
+}
+
+@keyframes modal-slide-in {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 .modal-content {
