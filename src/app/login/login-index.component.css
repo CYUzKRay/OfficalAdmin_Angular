@@ -3,42 +3,162 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(45deg, #6ab1e7, #5ee36f);
+  /* Premium gradient using site primary colors */
+  background: linear-gradient(135deg, var(--secondary-color, #d5ecf4) 0%, var(--primary-color, #499fb6) 50%, var(--dark-accent, #1d545f) 100%);
   overflow: hidden;
+  position: relative;
+}
+
+/* Animated Background Elements */
+.bg-shape {
+  position: absolute;
+  filter: blur(80px);
+  z-index: 0;
+  animation: float 10s infinite ease-in-out alternate;
+}
+
+.bg-shape-1 {
+  width: 400px;
+  height: 400px;
+  background: rgba(255, 255, 255, 0.4);
+  top: -10%;
+  left: -5%;
+  border-radius: 50%;
+}
+
+.bg-shape-2 {
+  width: 500px;
+  height: 500px;
+  background: var(--accent-color, #2a7b8f);
+  bottom: -15%;
+  right: -5%;
+  border-radius: 50%;
+  animation-delay: -5s;
+}
+
+@keyframes float {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  100% {
+    transform: translate(30px, 50px) scale(1.1);
+  }
 }
 
 .container {
   position: relative;
-  width: 800px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  width: 100%;
+  max-width: 420px;
+  min-height: 520px;
+  padding: 40px;
+  /* Glassmorphism Effect */
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.4);
   border-right: 1px solid rgba(255, 255, 255, 0.2);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  backdrop-filter: blur(10px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.login-switch {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-}
-
-.switch-Btn {
-  padding: 10px 20px;
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
-  border: none;
   border-radius: 20px;
-  cursor: pointer;
-  transition: 0.3s;
-  text-decoration: none;
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 0.8s ease-out forwards;
 }
-.switch-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Authentication Shared Styles injected via ng-deep */
+::ng-deep .form-box { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: center; animation: fadeIn 0.6s ease forwards; }
+::ng-deep .brand-logo { text-align: center; margin-bottom: 15px; font-size: 24px; color: var(--dark-accent); font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+::ng-deep .brand-logo .logo-icon { font-size: 32px; }
+::ng-deep .form-box h2 { color: var(--dark-accent); font-size: 28px; margin-bottom: 5px; text-align: center; }
+::ng-deep .subtitle { color: #555; text-align: center; margin-bottom: 30px; font-size: 14px; }
+::ng-deep .auth-form { width: 100%; }
+::ng-deep .input-group { margin-bottom: 20px; position: relative; }
+::ng-deep .glass-input { width: 100%; padding: 15px 20px; background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(255, 255, 255, 0.8); outline: none; border-radius: 12px; font-size: 16px; color: var(--text-color); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03); transition: all 0.3s; }
+::ng-deep .glass-input:focus { background: rgba(255, 255, 255, 0.9); border-color: var(--primary-color); box-shadow: 0 4px 15px rgba(73, 159, 182, 0.15); }
+::ng-deep .glass-input::placeholder { color: #888; }
+::ng-deep .form-options { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; font-size: 14px; }
+::ng-deep .remember-me { color: #444; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+::ng-deep .text-link { color: #f39c12; text-decoration: none; font-weight: bold; transition: color 0.3s; }
+::ng-deep .text-link:hover { color: #d68910; text-decoration: underline; }
+::ng-deep .text-link.accent { color: #f39c12; }
+::ng-deep .primary-btn { width: 100%; padding: 15px; background: var(--primary-color); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(73, 159, 182, 0.3); }
+::ng-deep .primary-btn:hover:not([disabled]) { background: var(--accent-color); transform: translateY(-2px); box-shadow: 0 8px 20px rgba(73, 159, 182, 0.4); }
+::ng-deep .primary-btn[disabled] { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+::ng-deep .form-footer { margin-top: 25px; text-align: center; font-size: 14px; color: #555; }
+
+/* Custom Checkbox Styles */
+::ng-deep .custom-checkbox-label {
+  display: flex;
+  align-items: center;
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+  user-select: none;
+  font-weight: 500;
+  color: var(--dark-accent);
+}
+
+::ng-deep .custom-checkbox {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+::ng-deep .checkmark {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  transform: translateY(-50%);
+  height: 20px;
+  width: 20px;
+  background-color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
+  transition: all 0.3s;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+::ng-deep .custom-checkbox-label:hover .custom-checkbox ~ .checkmark {
+  background-color: rgba(255, 255, 255, 0.9);
+  border-color: var(--primary-color);
+}
+
+::ng-deep .custom-checkbox:checked ~ .checkmark {
+  background-color: var(--primary-color);
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 10px rgba(73, 159, 182, 0.3);
+}
+
+::ng-deep .checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+::ng-deep .custom-checkbox:checked ~ .checkmark:after {
+  display: block;
+}
+
+::ng-deep .custom-checkbox-label .checkmark:after {
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
 }

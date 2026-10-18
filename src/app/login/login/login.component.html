@@ -1,20 +1,48 @@
 <div class="form-box">
-  <h2>登入</h2>
-  <div class="input-box">
-    <input
-      type="text"
-      placeholder="用戶名"
-      required
-      [(ngModel)]="data.Account"
-    />
+  <div class="brand-logo">
+    <!-- Optional Icon placeholder -->
+    <span class="logo-icon">💠</span>
+    <span>系統管理後台</span>
   </div>
-  <div class="input-box">
-    <input
-      type="password"
-      placeholder="密碼"
-      required
-      [(ngModel)]="data.Password"
-    />
+  <h2>歡迎回來</h2>
+  <p class="subtitle">請登入您的管理員帳號</p>
+
+  <form (ngSubmit)="Login()" #loginForm="ngForm" class="auth-form">
+    <div class="input-group">
+      <input
+        type="email"
+        placeholder="電子信箱"
+        required
+        [(ngModel)]="data.email"
+        name="email"
+        class="glass-input"
+      />
+    </div>
+
+    <div class="input-group">
+      <input
+        type="password"
+        placeholder="密碼"
+        required
+        [(ngModel)]="data.password"
+        name="password"
+        class="glass-input"
+      />
+    </div>
+
+    <div class="form-options">
+      <label class="remember-me custom-checkbox-label">
+        <input type="checkbox" [(ngModel)]="rememberMe" name="rememberMe" class="custom-checkbox" />
+        <span class="checkmark"></span>
+        記住我
+      </label>
+      <a class="text-link" routerLink="../forget-password">忘記密碼？</a>
+    </div>
+
+    <button type="submit" class="btn primary-btn" [disabled]="!loginForm.form.valid">登入系統</button>
+  </form>
+
+  <div class="form-footer">
+    還沒有帳號？ <a routerLink="../register" class="text-link accent">立即註冊</a>
   </div>
-  <button class="btn" (click)="Login()">登入</button>
 </div>

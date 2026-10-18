@@ -1,0 +1,61 @@
+<div class="form-box">
+  <div class="brand-logo">
+    <span class="logo-icon">💠</span>
+    <span>系統管理後台</span>
+  </div>
+  <h2>建立新帳號</h2>
+  <p class="subtitle">請填寫以下資訊完成註冊</p>
+
+  <form (ngSubmit)="Register()" #registerForm="ngForm" class="auth-form">
+    <div class="input-group">
+      <input
+        type="text"
+        placeholder="姓名"
+        required
+        [(ngModel)]="data.name"
+        name="name"
+        class="glass-input"
+      />
+    </div>
+
+    <div class="input-group">
+      <input
+        type="email"
+        placeholder="電子信箱"
+        required
+        [(ngModel)]="data.email"
+        name="email"
+        class="glass-input"
+      />
+    </div>
+
+    <div class="input-group">
+      <input
+        type="password"
+        placeholder="密碼 (最少8字元)"
+        required
+        minlength="8"
+        [(ngModel)]="data.password"
+        name="password"
+        class="glass-input"
+      />
+    </div>
+
+    <div class="input-group" style="margin-bottom: 30px;">
+      <input
+        type="password"
+        placeholder="確認密碼"
+        required
+        [(ngModel)]="data.confirmPassword"
+        name="confirmPassword"
+        class="glass-input"
+      />
+    </div>
+
+    <button type="submit" class="btn primary-btn" [disabled]="!registerForm.form.valid">立即註冊</button>
+  </form>
+
+  <div class="form-footer">
+    已經有帳號了？ <a routerLink="../login" class="text-link accent">返回登入</a>
+  </div>
+</div>
