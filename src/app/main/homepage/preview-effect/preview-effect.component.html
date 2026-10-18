@@ -7,17 +7,17 @@
     </h1>
     <div class="preview-actions">
       <div class="device-selector">
-        <button class="device-option active" data-device="desktop">
+        <button class="device-option" [class.active]="currentDevice === 'desktop'" (click)="setDevice('desktop')">
           <i class="fas fa-desktop"></i> 桌面版
         </button>
-        <button class="device-option" data-device="tablet">
+        <button class="device-option" [class.active]="currentDevice === 'tablet'" (click)="setDevice('tablet')">
           <i class="fas fa-tablet-alt"></i> 平板
         </button>
-        <button class="device-option" data-device="mobile">
+        <button class="device-option" [class.active]="currentDevice === 'mobile'" (click)="setDevice('mobile')">
           <i class="fas fa-mobile-alt"></i> 手機
         </button>
       </div>
-      <button class="close-btn" onclick="window.close()">
+      <button class="close-btn" (click)="Close()">
         <i class="fas fa-times"></i> 關閉預覽
       </button>
     </div>
@@ -36,7 +36,7 @@
   </div>
 
   <!-- 設備框架 -->
-  <div class="device-frame desktop" id="deviceFrame">
+  <div class="device-frame" [ngClass]="currentDevice" id="deviceFrame">
     <!-- 網站頭部 -->
     <header>
       <div class="container header-container">
@@ -69,7 +69,13 @@
     <!-- 輪播英雄區塊 -->
     <section class="hero">
       <div class="carousel-container" id="carouselContainer">
-        <!-- 輪播圖片會通過JavaScript動態添加 -->
+        <div class="carousel-slide active" [style.backgroundImage]="previewImage ? 'url(' + previewImage + ')' : ''">
+          <div class="hero-content container">
+            <h1>{{ previewTitle || '標題預覽' }}</h1>
+            <p>{{ previewSubTitle || '這是一段副標題預覽或是描述文字，展示實際效果。' }}</p>
+            <a *ngIf="previewUrl" [href]="previewUrl" class="btn" target="_blank">了解更多</a>
+          </div>
+        </div>
       </div>
 
       <!-- 輪播控制 -->

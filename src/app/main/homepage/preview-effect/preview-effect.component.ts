@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-preview-effect',
@@ -6,5 +6,20 @@ import { Component } from '@angular/core';
   styleUrls: ['./preview-effect.component.css']
 })
 export class PreviewEffectComponent {
+  @Input() previewTitle: string = '';
+  @Input() previewSubTitle: string = '';
+  @Input() previewUrl: string = '';
+  @Input() previewImage: string = '';
 
+  @Output() closePreview = new EventEmitter<void>();
+
+  currentDevice: string = 'desktop'; // desktop, tablet, mobile
+
+  setDevice(device: string) {
+    this.currentDevice = device;
+  }
+
+  Close() {
+    this.closePreview.emit();
+  }
 }
