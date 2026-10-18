@@ -1,6 +1,7 @@
 export interface ImageItem {
   id: number;
-  file: File;
+  file?: File;
   previewUrl: string;
   isMain: boolean;
+  originalId?: string;
 }

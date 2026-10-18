@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
+import { SitePublishService } from 'src/app/share/service/site-publish.service';
+import { SortLockService } from 'src/app/share/service/sort-lock.service';
 import { environment } from 'src/environments/environment';
 import {
   SearchCategoryModel,
@@ -28,6 +30,7 @@ export class ManageComponent {
     name: '',
     status: true,
     introduction: '',
+    seoTitle: '',
     parentId: null,
   };
 
@@ -53,6 +56,9 @@ export class ManageComponent {
   constructor(
     private route: Router,
     private http: HttpService,
+    private sitePublish: SitePublishService,
+    /** 模板要讀 isBusy / isBusyKey,所以是 public */
+    public sortLock: SortLockService,
   ) {}
 
   ngOnInit(): void {
@@ -78,6 +84,7 @@ export class ManageComponent {
     this.newCategoryData.name = category.name ?? '';
     this.newCategoryData.status = category.status;
     this.newCategoryData.introduction = category.introduction;
+    this.newCategoryData.seoTitle = category.seoTitle ?? '';
     this.isCategorayEditing = true;
   }
 
@@ -91,6 +98,7 @@ export class ManageComponent {
       name: '',
       status: true,
       introduction: '',
+      seoTitle: '',
       parentId: null,
     };
   }
@@ -106,6 +114,8 @@ export class ManageComponent {
           this.newCategoryData,
         )
         .subscribe((x) => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           this.closeCategoryModal(); // 儲存完畢後關閉
           this.searchCategory();
           this.searchSubCategory();
@@ -117,6 +127,8 @@ export class ManageComponent {
           this.newCategoryData,
         )
         .subscribe((x) => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           if (this.categoryType == 'main') {
             const newItem: SearchCategoryModel = {
               ...x.data,
@@ -177,6 +189,8 @@ export class ManageComponent {
           `${environment.apiUrl}Product/RemoveCategory/${parameterURL}`,
         )
         .subscribe((x) => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           this.searchCategory();
           this.searchSubCategory();
         });
@@ -184,17 +198,30 @@ export class ManageComponent {
   }
 
   editCategorySort(type: string, direction: string, item: SearchCategoryModel) {
-    this.http
-      .put<ApiResponse>(
-        `${environment.apiUrl}Product/EditCategorySort/${type}/${direction}`,
-        item,
+    this.sortLock
+      .run(
+        `cat-${type}:${item.id}:${direction}`,
+        this.http.put<ApiResponse>(
+          `${environment.apiUrl}Product/EditCategorySort/${type}/${direction}`,
+          item,
+        )
       )
-      .subscribe((x) => {
-        if (type == 'main') {
-          this.searchCategory();
-        } else {
-          this.searchSubCategory();
-        }
+      .subscribe({
+        next: (res) => {
+          // 已在最前/最後是 HTTP 200 + isSuccess false,不是錯誤
+          if (res?.isSuccess === false) {
+            alert(res.message ?? '無法再移動');
+            return;
+          }
+          // 排序是延後發布,待發布標記由後端記錄,重讀狀態把它拿回來
+          this.sitePublish.refresh();
+          if (type == 'main') {
+            this.searchCategory();
+          } else {
+            this.searchSubCategory();
+          }
+        },
+        error: (err) => alert(SortLockService.message(err)),
       });
   }
 
@@ -203,6 +230,7 @@ export class ManageComponent {
     this.newCategoryData.name = category.name ?? '';
     this.newCategoryData.status = category.status;
     this.newCategoryData.introduction = category.introduction;
+    this.newCategoryData.seoTitle = category.seoTitle ?? '';
     this.isCategoryModalOpen = true;
     this.categoryModalTitle = '修改主分類';
     this.isCategorayEditing = true;
@@ -261,6 +289,12 @@ export class ManageComponent {
     return Array.from({ length: totalPages }, (_, i) => i);
   }
 
+  /** 用官網樣式預覽這個產品(含未上架的) */
+  previewProduct(id: string | undefined) {
+    if (!id) return;
+    this.route.navigate([`main/product/preview/${id}`]);
+  }
+
   editProduct(id: string | undefined) {
     if (!id) return;
     this.route.navigate([`main/product/edit/${id}`]);
@@ -272,6 +306,8 @@ export class ManageComponent {
       this.http
         .delete<ApiResponse>(`${environment.apiUrl}Product/DeleteProduct/${id}`)
         .subscribe(() => {
+          // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+          this.sitePublish.refresh();
           this.searchProducts();
         });
     }
@@ -282,16 +318,34 @@ export class ManageComponent {
     this.http
       .put<ApiResponse>(`${environment.apiUrl}Product/ToggleProductStatus/${id}`, null)
       .subscribe(() => {
+        // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+        this.sitePublish.refresh();
         this.searchProducts();
       });
   }
 
   editProductSort(id: string | undefined, direction: 'up' | 'down') {
     if (!id) return;
-    this.http
-      .put<ApiResponse>(`${environment.apiUrl}Product/EditProductSort/${id}/${direction}`, null)
-      .subscribe(() => {
-        this.searchProducts();
+    this.sortLock
+      .run(
+        `product:${id}:${direction}`,
+        this.http.put<ApiResponse>(
+          `${environment.apiUrl}Product/EditProductSort/${id}/${direction}`,
+          null
+        )
+      )
+      .subscribe({
+        next: (res) => {
+          // 已在最前/最後是 HTTP 200 + isSuccess false,不是錯誤
+          if (res?.isSuccess === false) {
+            alert(res.message ?? '無法再移動');
+            return;
+          }
+          // 排序是延後發布,待發布標記由後端記錄,重讀狀態把它拿回來
+          this.sitePublish.refresh();
+          this.searchProducts();
+        },
+        error: (err) => alert(SortLockService.message(err)),
       });
   }
 }

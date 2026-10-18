@@ -1,7 +1,7 @@
 <div class="page-wrapper">
   <!-- 頁頭 -->
   <div class="admin-header">
-    <h1>新增產品</h1>
+    <h1>{{ isEditMode ? '編輯產品' : '新增產品' }}</h1>
   </div>
 
   <!-- ① 基本資訊 -->
@@ -22,16 +22,16 @@
             <span class="toggle-label" id="status-label">{{ isActive ? '上架中' : '未上架' }}</span>
           </div>
         </div>
-        <!-- 是否可購買 -->
+        <!-- 是否為加工品 -->
         <div class="form-group col-6">
-          <label class="form-label">是否可購買</label>
+          <label class="form-label">是否為加工品</label>
           <div class="toggle-row">
             <label class="toggle-switch">
-              <input type="checkbox" [(ngModel)]="can_order" name="can_order" />
+              <input type="checkbox" [(ngModel)]="isProcessable" name="isProcessable" />
               <span class="toggle-slider"></span>
             </label>
-            <span class="toggle-label" id="can-order-label">
-              {{ can_order ? '可直接購買' : '不可直接購買' }}
+            <span class="toggle-label" id="is-processable-label">
+              {{ isProcessable ? '是' : '否' }}
             </span>
           </div>
         </div>
@@ -149,6 +149,62 @@
 
       <div class="form-row">
         <div class="form-group">
+          <label class="form-label">備註</label>
+          <textarea
+            class="form-control"
+            [(ngModel)]="remark"
+            name="remark"
+            maxlength="500"
+            placeholder="補充說明,例如保存方式、使用注意事項"
+          ></textarea>
+          <p class="form-hint">選填,最多 500 字。未填寫時官網不會顯示這一列</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">品牌</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="brand"
+            name="brand"
+            maxlength="50"
+            placeholder="例如 NCA、HT"
+          />
+          <p class="form-hint">選填。給搜尋引擎看的品牌,未填寫時不輸出</p>
+        </div>
+        <div class="form-group">
+          <label class="form-label">原廠製造商</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="manufacturer"
+            name="manufacturer"
+            maxlength="100"
+            placeholder="原料的原廠公司名稱"
+          />
+          <p class="form-hint">選填,只填已確認的原廠。未填寫時不輸出,不會自動帶入航泰</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">SEO 標題</label>
+          <input
+            type="text"
+            class="form-control"
+            [(ngModel)]="seoTitle"
+            name="seoTitle"
+            maxlength="100"
+            placeholder="官網頁面的瀏覽器標題"
+          />
+          <p class="form-hint">選填,最多 100 字。未填寫時自動使用「產品名稱|分類|航泰企業有限公司」</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
           <label class="form-label">推薦研磨場景</label>
           <div class="application-options">
             <label class="application-option" *ngFor="let app of applications">
@@ -164,10 +220,16 @@
           </div>
           <p class="form-hint">可複選,勾選的場景會顯示在官網產品頁的「適用場景」</p>
         </div>
+      </div>
 
       <div class="form-row">
         <div class="form-group">
-          <label class="form-label">產品描述</label>
+          <label class="form-label" style="display: flex; justify-content: space-between; align-items: center;">
+            產品描述
+            <button class="action-btn-secondary" type="button" (click)="isGalleryOpen = true" style="font-size: 12px; padding: 4px 8px;">
+              🖼 從圖庫選擇圖片
+            </button>
+          </label>
           <app-editor
             [(ngModel)]="productDescription"
             [ngModelOptions]="{standalone: true}"
@@ -371,7 +433,7 @@
           [class.thumb-item--main]="img.isMain"
         >
           <!-- 預覽圖 -->
-          <img [src]="img.previewUrl" [alt]="img.file.name" class="thumb-img" />
+          <img [src]="img.previewUrl" [alt]="img.file?.name || ''" class="thumb-img" />
 
           <!-- 主圖標籤 -->
           <span class="main-label" *ngIf="img.isMain">主圖</span>
@@ -428,3 +490,8 @@
   </div>
 </div>
 <!-- /page-wrapper -->
+
+<!-- 圖片庫 Modal -->
+<app-modal [isOpen]="isGalleryOpen" [title]="'選擇庫存圖片'" (closeModal)="isGalleryOpen = false">
+  <app-picture-manage (imageUrlResult)="onImageSelectedFromGallery($event)"></app-picture-manage>
+</app-modal>

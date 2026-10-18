@@ -18,6 +18,11 @@ export interface CategoryModel {
   introduction?: string | null;
 
   /**
+   * 官網分類頁 title 覆寫(最多 100 字,可空)
+   */
+  seoTitle?: string | null;
+
+  /**
    * 分類名稱(最多 50 字)
    */
   name: string;

@@ -21,6 +21,11 @@ export interface ProductDetailModel {
   canOrder?: boolean;
 
   /**
+   * 是否為加工成品
+   */
+  isProcessable?: boolean;
+
+  /**
    * 分類完整名稱,格式「主分類 > 次分類」
    */
   categoryName?: string | null;
@@ -64,6 +69,26 @@ export interface ProductDetailModel {
    * 產品 Id
    */
   productId?: string;
+
+  /**
+   * 備註
+   */
+  remark?: string | null;
+
+  /**
+   * 品牌
+   */
+  brand?: string | null;
+
+  /**
+   * 原廠製造商
+   */
+  manufacturer?: string | null;
+
+  /**
+   * 官網頁面 title 覆寫
+   */
+  seoTitle?: string | null;
 
   /**
    * 規格

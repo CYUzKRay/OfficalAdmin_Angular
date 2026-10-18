@@ -36,4 +36,14 @@ export interface ProductSearchResModel {
    * 產品名稱
    */
   productName?: string | null;
+
+   /**
+   * 產品規格與型號
+   */
+  spec: string;
+
+  /**
+   * 是否為推薦商品
+   */
+  isRecommend?: boolean;
 }

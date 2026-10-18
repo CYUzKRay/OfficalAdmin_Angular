@@ -1,12 +1,13 @@
 import { ChangeDetectorRef, Component, OnInit, OnDestroy } from '@angular/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
 import { environment } from 'src/environments/environment';
 import {
   SearchCategoryModel,
   SearchCategoryModelListResponseData,
   Response as ApiResponse,
+  ProductDetailModelResponseData,
   SearchHomeApplicationModel,
   SearchHomeApplicationModelListResponseData,
 } from 'src/app/core/api/models';
@@ -28,6 +29,18 @@ export class AddComponent implements OnInit, OnDestroy {
   //  番號管理
   // ════════════════════════════════════════
   items: GritItem[] = [];
+  // ── 圖庫管理 ──
+  isGalleryOpen = false;
+
+  onImageSelectedFromGallery(url: string): void {
+    navigator.clipboard.writeText(url).then(() => {
+      alert('已複製圖片網址！請至產品描述的編輯器中「插入圖片」並貼上此網址。');
+    }).catch(err => {
+      console.error('複製失敗', err);
+      alert('複製網址失敗，您的瀏覽器可能不支援剪貼簿 API，網址為：\n' + url);
+    });
+    this.isGalleryOpen = false;
+  }
 
   // ── 產品描述（富文本編輯器） ──
   productDescription = '';
@@ -35,16 +48,22 @@ export class AddComponent implements OnInit, OnDestroy {
   // ── 材質 ──
   material = '';
 
-  // ── 是否可購買 ──
-  can_order = false;
+  // ── 是否為加工品 ──
+  isProcessable = false;
 
   // ── 產品基本屬性 ──
+  isEditMode = false;
+  productId: string | null = null;
   productName = '';
   isActive = true;
   unit = '';
   modelNumber = '';
   specification = '';
   usage = '';
+  remark = '';
+  brand = '';
+  manufacturer = '';
+  seoTitle = '';
 
   /** 可勾選的應用領域(含首頁未顯示的) */
   applications: SearchHomeApplicationModel[] = [];
@@ -58,14 +77,14 @@ export class AddComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     const defaults = [
-      '40#',
-      '60#',
-      '80#',
-      '100#',
-      '120#',
-      '150#',
-      '180#',
-      '240#',
+      '#40',
+      '#60',
+      '#80',
+      '#100',
+      '#120',
+      '#150',
+      '#180',
+      '#240',
     ];
     this.items = defaults.map((g) => ({
       id: this.nextId++,
@@ -75,6 +94,15 @@ export class AddComponent implements OnInit, OnDestroy {
     this.loadMainCategories();
 
     this.loadApplications();
+
+    this.activatedRoute.paramMap.subscribe(params => {
+      const id = params.get('id');
+      if (id) {
+        this.isEditMode = true;
+        this.productId = id;
+        this.loadProductDetails(id);
+      }
+    });
   }
 
   loadApplications(): void {
@@ -94,6 +122,72 @@ export class AddComponent implements OnInit, OnDestroy {
     this.selectedApplicationIds = checked
       ? [...this.selectedApplicationIds, id]
       : this.selectedApplicationIds.filter((x) => x !== id);
+  }
+
+  loadProductDetails(id: string): void {
+    this.http
+      .get<ProductDetailModelResponseData>(`${environment.apiUrl}Product/GetProductById/${id}`)
+      .subscribe((res) => {
+        const data = res.data;
+        if (!data) return;
+
+        this.productName = data.name || '';
+        this.isActive = data.isActive ?? true;
+        this.unit = data.unit || '';
+        this.modelNumber = data.modelNumber || '';
+        this.specification = data.specification || '';
+        this.usage = data.usage || '';
+        this.material = data.material || '';
+        this.remark = data.remark || '';
+        this.brand = data.brand || '';
+        this.manufacturer = data.manufacturer || '';
+        this.seoTitle = data.seoTitle || '';
+        this.selectedApplicationIds = (data.applications ?? [])
+          .map((a) => a.id)
+          .filter((id): id is string => !!id);
+        this.productDescription = data.description || '';
+        this.isProcessable = data.isProcessable ?? false;
+
+        if (data.grits && data.grits.length > 0) {
+          this.items = data.grits.map((g) => ({
+            id: this.nextId++,
+            grit: g.grit || '',
+            price: g.price ?? null,
+          }));
+        }
+
+        if (data.pictures && data.pictures.length > 0) {
+          this.images = data.pictures.map((p, index) => ({
+            id: this.nextId++,
+            previewUrl: p.url || '',
+            isMain: index === 0,
+            originalId: p.id,
+          }));
+        }
+
+        this.selectedSubCategoryId = data.subCategoryId || '';
+
+        if (this.selectedSubCategoryId) {
+          this.http
+            .get<SearchCategoryModelListResponseData>(
+              `${environment.apiUrl}Product/SearchCateGory`,
+              { nextLayer: true }
+            )
+            .subscribe((subRes) => {
+              const subCats = subRes.data || [];
+              const currentSub = subCats.find((s) => s.id === this.selectedSubCategoryId);
+              if (currentSub && currentSub.parentId) {
+                this.selectedMainCategoryId = currentSub.parentId;
+                this.onMainCategoryChange();
+                setTimeout(() => {
+                  this.selectedSubCategoryId = data.subCategoryId || '';
+                  this.cdr.markForCheck();
+                });
+              }
+            });
+        }
+        this.cdr.markForCheck();
+      });
   }
 
   loadMainCategories(): void {
@@ -141,16 +235,16 @@ export class AddComponent implements OnInit, OnDestroy {
     let grits: string[] = [];
     switch (presetType) {
       case 'coarse':
-        grits = ['40#', '60#', '80#', '100#', '120#'];
+        grits = ['#40', '#60', '#80', '#100', '#120'];
         break;
       case 'medium-fine':
-        grits = ['150#', '180#', '240#', '320#', '400#'];
+        grits = ['#150', '#180', '#240', '#320', '#400'];
         break;
       case 'ultra-fine':
-        grits = ['600#', '800#', '1000#', '1200#', '1500#'];
+        grits = ['#600', '#800', '#1000', '#1200', '#1500'];
         break;
       case 'standard':
-        grits = ['40#', '80#', '120#', '180#', '240#', '320#', '400#', '600#', '800#'];
+        grits = ['#40', '#80', '#120', '#180', '#240', '#320', '#400', '#600', '#800'];
         break;
     }
 
@@ -186,7 +280,7 @@ export class AddComponent implements OnInit, OnDestroy {
 
       const newItems = grits.map((g) => ({
         id: this.nextId++,
-        grit: /^\d+$/.test(g) ? g + '#' : g,
+        grit: /^\d+$/.test(g) ?"#"+ g  : g,
         price: null,
       }));
 
@@ -247,7 +341,8 @@ export class AddComponent implements OnInit, OnDestroy {
   constructor(
     private cdr: ChangeDetectorRef,
     private http: HttpService,
-    private router: Router
+    private router: Router,
+    private activatedRoute: ActivatedRoute
   ) {}
 
   triggerInput(input: HTMLInputElement): void {
@@ -333,7 +428,7 @@ export class AddComponent implements OnInit, OnDestroy {
   }
 
   getFiles(): File[] {
-    return this.images.map((i) => i.file);
+    return this.images.map((i) => i.file).filter((f): f is File => !!f);
   }
 
   // ════════════════════════════════════════
@@ -369,10 +464,14 @@ export class AddComponent implements OnInit, OnDestroy {
     formData.append('ModelNumber', this.modelNumber);
     formData.append('Material', this.material);
     formData.append('Usage', this.usage);
-    this.selectedApplicationIds.forEach((id) => formData.append('ApplicationIds', id));
     formData.append('Specification', this.specification);
+    formData.append('Remark', this.remark);
+    formData.append('Brand', this.brand.trim());
+    formData.append('Manufacturer', this.manufacturer.trim());
+    formData.append('SeoTitle', this.seoTitle.trim());
+    this.selectedApplicationIds.forEach((id) => formData.append('ApplicationIds', id));
     formData.append('Description', this.productDescription);
-    formData.append('CanOrder', String(this.can_order));
+    formData.append('IsProcessable', String(this.isProcessable));
     formData.append('SubCategoryId', this.selectedSubCategoryId);
 
     // 番號資料
@@ -381,23 +480,47 @@ export class AddComponent implements OnInit, OnDestroy {
       formData.append(`Grits[${i}].Price`, item.price !== null ? String(item.price) : '0');
     });
 
-    // 圖片（主圖排第一，由 getFiles() 取得對應順序）
-    this.getFiles().forEach((file) => {
-      formData.append('Pictures', file);
-    });
-
-    this.http
-      .postForm<ApiResponse>(`${environment.apiUrl}Product/CreateProduct`, formData)
-      .subscribe({
-        next: (res) => {
-          alert('產品新增成功！');
-          this.router.navigate(['main/product/manage']);
-        },
-        error: (err) => {
-          console.error(err);
-          alert('產品新增失敗，請稍後再試。');
+    // 圖片
+    if (this.isEditMode && this.productId) {
+      formData.append('ProductId', this.productId);
+      this.images.forEach((img) => {
+        if (img.originalId) {
+          formData.append('KeepPictureIds', img.originalId);
+        } else if (img.file) {
+          formData.append('Pictures', img.file);
         }
       });
+
+      this.http
+        .putForm<ApiResponse>(`${environment.apiUrl}Product/EditProduct`, formData)
+        .subscribe({
+          next: (res) => {
+            alert('產品編輯成功！');
+            this.router.navigate(['main/product/manage']);
+          },
+          error: (err) => {
+            console.error(err);
+            alert('產品編輯失敗，請稍後再試。');
+          }
+        });
+    } else {
+      this.getFiles().forEach((file) => {
+        formData.append('Pictures', file);
+      });
+
+      this.http
+        .postForm<ApiResponse>(`${environment.apiUrl}Product/CreateProduct`, formData)
+        .subscribe({
+          next: (res) => {
+            alert('產品新增成功！');
+            this.router.navigate(['main/product/manage']);
+          },
+          error: (err) => {
+            console.error(err);
+            alert('產品新增失敗，請稍後再試。');
+          }
+        });
+    }
   }
 
   ngOnDestroy(): void {

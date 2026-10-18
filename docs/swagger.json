@@ -2,10 +2,977 @@
   "openapi": "3.0.1",
   "info": {
     "title": "Hatai Official API",
-    "description": "航泰官網後台管理 API。\n\n## 共用回應格式\n除特別標註外,所有端點都回傳統一包裝:`{ data, code, message, isSuccess }`。\n- `code`:業務狀態碼(200 成功;其他為失敗)\n- `isSuccess`:操作是否成功(注意:HTTP 200 時 isSuccess 仍可能為 false,例如排序已在最前方)\n- `data`:實際資料內容,各端點的型別請見其 200 回應 schema\n\n## 錯誤處理\n- 404:找不到指定資料\n- 400:輸入驗證失敗或業務規則不允許\n- 401:未提供有效 X-Api-Key(若伺服器已啟用驗證)\n- 500:未預期錯誤\n錯誤回應一律為 `{ code, message, isSuccess: false }`。\n\n## 圖片網址\n所有圖片網址皆為 S3 預簽名 URL,**有效期 10 分鐘**,前端不可快取永久使用,過期需重新呼叫查詢端點取得新網址。",
+    "description": "航泰官網後台管理 API。\n\n## 共用回應格式\n除特別標註外,所有端點都回傳統一包裝:`{ data, code, message, isSuccess }`。\n- `code`:業務狀態碼(200 成功;其他為失敗)\n- `isSuccess`:操作是否成功(注意:HTTP 200 時 isSuccess 仍可能為 false,例如排序已在最前方)\n- `data`:實際資料內容,各端點的型別請見其 200 回應 schema\n\n## 錯誤處理\n- 404:找不到指定資料\n- 400:輸入驗證失敗或業務規則不允許\n- 401:未提供有效 X-Api-Key(若伺服器已啟用驗證)\n- 500:未預期錯誤\n錯誤回應一律為 `{ code, message, isSuccess: false }`。\n\n## 圖片網址\n所有圖片網址皆為 CloudFront 永久網址(`S3:PublicBaseUrl` + 物件 key),**不會過期**,可直接存入內容或靜態頁面。\n同名重新上傳時後端會自動清除該路徑的 CDN 快取。",
     "version": "v1"
   },
   "paths": {
+    "/api/Site/Carousel/SearchCarouselPictures": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "查詢全部輪播圖",
+        "description": "依排序值由小到大回傳全部輪播圖。image 為 CloudFront 永久網址,可直接放入 img src。",
+        "responses": {
+          "200": {
+            "description": "成功,data 為輪播圖陣列",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchHomeCarouselModelListResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Faq/Faqs": {
+      "post": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "查詢 FAQ 列表(分頁)",
+        "description": "依條件篩選並分頁回傳 FAQ 列表,結果依排序值(orders)由小到大排列。\r\n**注意:此端點不使用統一包裝**,直接回傳 `{ totalCount, faqList }`。",
+        "requestBody": {
+          "description": "查詢條件。所有篩選欄位皆可省略(回傳全部);pageIndex 從 0 開始",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "查詢結果:totalCount 為符合條件的總筆數,faqList 為當頁資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaqPaginationModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Faq/Preview/{faqId}": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "取得單筆 FAQ 完整內容",
+        "parameters": [
+          {
+            "name": "faqId",
+            "in": "path",
+            "description": "FAQ 的 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為該筆 FAQ 的完整內容(含答案 answer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaqModelResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該筆 FAQ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/News/News": {
+      "post": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "查詢最新消息列表(分頁)",
+        "description": "依條件篩選並分頁回傳消息列表,結果依排序值(orders)由小到大排列。\r\n**注意:此端點不使用統一包裝**,直接回傳 `{ totalCount, newsList }`。",
+        "requestBody": {
+          "description": "查詢條件。所有篩選欄位皆可省略(回傳全部);pageIndex 從 0 開始",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsSearchParametersModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsSearchParametersModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewsSearchParametersModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "查詢結果:totalCount 為符合條件的總筆數(計算總頁數用),newsList 為當頁資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsPaginationModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/News/PreviewNew/{newId}": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "取得單筆消息完整內容",
+        "parameters": [
+          {
+            "name": "newId",
+            "in": "path",
+            "description": "消息的 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為該筆消息的完整內容(含 HTML 內文 newContent)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NewsModelResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該筆消息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Product/SearchCateGory": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "查詢產品分類",
+        "description": "三種查詢模式:\r\n- 不帶參數:回傳全部**主分類**\r\n- `categoryId={主分類Id}`:回傳該主分類底下的次分類\r\n- `nextLayer=true`:回傳**所有次分類**(忽略 categoryId)\r\n結果依排序值由小到大,index 為列表中的序號(從 1 開始)。",
+        "parameters": [
+          {
+            "name": "categoryId",
+            "in": "query",
+            "description": "主分類 Id(GUID 字串);傳 null 或省略代表查主分類",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "nextLayer",
+            "in": "query",
+            "description": "true 時回傳所有次分類",
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為分類陣列",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchCategoryModelListResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "categoryId 不是合法的 GUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Product/GetProducts": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "查詢產品列表(含分頁、篩選)",
+        "description": "coverURL 為第一張產品圖的 CloudFront 永久網址,沒有圖片時為空字串。\r\ncategoryName 格式為「主分類 > 次分類」。\r\npageIndex 從 0 開始;pageSize 省略時預設 10。",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "產品名稱關鍵字(模糊比對);null 或空字串代表不篩選",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "categoryId",
+            "in": "query",
+            "description": "依次分類 Id 篩選;null 代表不篩選",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "isActive",
+            "in": "query",
+            "description": "依上下架狀態篩選;null 代表不篩選",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "pageIndex",
+            "in": "query",
+            "description": "頁碼,從 0 開始",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "description": "每頁筆數;省略時預設 10",
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 包含 totalCount 與當頁 productList",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductPaginationModelResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Product/GetProductById/{id}": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "取得單一產品詳情",
+        "description": "回傳產品完整資料,含規格、番號價格表與圖片清單。\r\n圖片 URL 為 CloudFront 永久網址。",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "產品 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為產品詳情",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductDetailModelResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Site/Product/GetRecommendedProducts": {
+      "get": {
+        "tags": [
+          "官網前台"
+        ],
+        "summary": "取得推薦商品清單(最多三項,供官網首頁顯示)",
+        "responses": {
+          "200": {
+            "description": "成功,data 為推薦商品陣列(ProductSearchResModel)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSearchResModelListResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/CreateApplication": {
+      "post": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "新增應用領域",
+        "description": "以 `multipart/form-data` 上傳背景圖並建立應用領域,排序自動排在最後。\r\n圖片限制:jpeg / png / webp / gif,大小上限 10MB。",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "picture",
+                  "title",
+                  "titleEn"
+                ],
+                "type": "object",
+                "properties": {
+                  "picture": {
+                    "type": "string",
+                    "description": "背景圖片檔(jpeg/png/webp/gif,上限 10MB)",
+                    "format": "binary"
+                  },
+                  "titleEn": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "英文標題(最多 50 字)"
+                  },
+                  "title": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "中文標題(最多 50 字)"
+                  },
+                  "description": {
+                    "maxLength": 200,
+                    "type": "string",
+                    "description": "中文描述(最多 200 字,可空)"
+                  },
+                  "status": {
+                    "type": "boolean",
+                    "description": "是否啟用顯示"
+                  }
+                }
+              },
+              "encoding": {
+                "picture": {
+                  "style": "form"
+                },
+                "titleEn": {
+                  "style": "form"
+                },
+                "title": {
+                  "style": "form"
+                },
+                "description": {
+                  "style": "form"
+                },
+                "status": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功,data 為建立後的資料(picture 為 S3 內部路徑,顯示請用查詢端點的 image 網址)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeApplicationResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "欄位未填、圖片格式不支援或超過大小限制",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/SearchApplications": {
+      "get": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "查詢全部應用領域",
+        "description": "依排序值由小到大回傳全部應用領域(含停用)。image 為 CloudFront 永久網址,可直接放入 img src。",
+        "responses": {
+          "200": {
+            "description": "成功,data 為應用領域陣列",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchHomeApplicationModelListResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/EditApplication": {
+      "put": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "編輯應用領域",
+        "description": "以 `multipart/form-data` 傳送。picture 不帶就沿用原本的背景圖;\r\n帶了新圖的話,舊圖會在存檔成功後從 S3 刪除。status 是「首頁顯示」,列表上的快速切換用 EditApplicationStatus。",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "id",
+                  "title",
+                  "titleEn"
+                ],
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "要編輯的應用領域 Id",
+                    "format": "uuid"
+                  },
+                  "picture": {
+                    "type": "string",
+                    "description": "新的背景圖片檔;不換圖就不要帶,沿用原本的圖",
+                    "format": "binary"
+                  },
+                  "titleEn": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "英文標題(最多 50 字)"
+                  },
+                  "title": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "中文標題(最多 50 字)"
+                  },
+                  "description": {
+                    "maxLength": 200,
+                    "type": "string",
+                    "description": "中文描述(最多 200 字,可空)"
+                  },
+                  "status": {
+                    "type": "boolean",
+                    "description": "是否顯示於官網首頁。只管首頁那一區,隱藏後產品仍可勾選"
+                  }
+                }
+              },
+              "encoding": {
+                "id": {
+                  "style": "form"
+                },
+                "picture": {
+                  "style": "form"
+                },
+                "titleEn": {
+                  "style": "form"
+                },
+                "title": {
+                  "style": "form"
+                },
+                "description": {
+                  "style": "form"
+                },
+                "status": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功,data 為編輯後的資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeApplicationResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "欄位未填、圖片格式不支援或超過大小限制",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該應用領域",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/EditApplicationSort/{direction}": {
+      "put": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "調整應用領域排序(上移/下移一格)",
+        "description": "已到頂/到底時回傳 HTTP 200 但 `isSuccess: false`。",
+        "parameters": [
+          {
+            "name": "direction",
+            "in": "path",
+            "description": "移動方向:`up` 或 `down`",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "只需要帶 id(要移動的應用領域 Id),其餘欄位可省略",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "交換完成(isSuccess: true);或已到頂/到底(isSuccess: false)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該應用領域",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/DeleteApplication": {
+      "delete": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "刪除應用領域(連同 S3 上的背景圖)",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "query",
+            "description": "要刪除的應用領域 Id(GUID),以 query string 傳遞:?applicationId=...",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除成功,data 為被刪除的資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeApplicationResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該應用領域",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Application/EditApplicationStatus/{applicationId}": {
+      "put": {
+        "tags": [
+          "Application"
+        ],
+        "summary": "切換應用領域啟用狀態(開↔關)",
+        "parameters": [
+          {
+            "name": "applicationId",
+            "in": "path",
+            "description": "應用領域 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "切換成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該應用領域",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/Register": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "註冊後台帳號",
+        "description": "密碼以 bcrypt 慢雜湊儲存。Email 不可重複。註冊成功會直接建立登入狀態(設定 Cookie)。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "註冊成功,data 為使用者資訊與 Access Token 到期時間",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseModelResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Email 已被註冊，或輸入驗證失敗",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/Login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "登入",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登入成功,data 為使用者資訊與 Access Token 到期時間",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseModelResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "帳號或密碼錯誤，或帳號已停用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/ForgotPassword": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "忘記密碼（寄送重設密碼信件）",
+        "description": "無論 Email 是否存在，一律回傳成功（避免帳號列舉攻擊）。\r\n信件內含重設連結，有效期限 1 小時。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "請求已受理（不代表 Email 存在）",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/ResetPassword": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "重設密碼",
+        "description": "使用忘記密碼信件中的 token 搭配新密碼完成重設。Token 用完即失效，且同時廢止所有 Refresh Token 強制重新登入。",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "重設成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Token 無效、已使用或已過期",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/Logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "登出",
+        "description": "從 Cookie 讀取目前的 Refresh Token 並將其廢止,同時清除所有登入相關 Cookie。無有效 Cookie 時仍視為登出成功。",
+        "responses": {
+          "200": {
+            "description": "登出成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Auth/RefreshToken": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "換發 Access Token",
+        "description": "從 Cookie 讀取尚未過期的 Refresh Token,換發新的 Access Token。\r\n換發時會同時輪替(rotate)並展延 Refresh Token 效期,舊 Token 立即失效,新 Token 一併寫回 Cookie。\r\n供前端 interceptor 於 Access Token 過期(收到 401)時自動呼叫。",
+        "responses": {
+          "200": {
+            "description": "換發成功,data 為使用者資訊與新的 Access Token 到期時間",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponseModelResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Refresh Token 無效、已過期，或帳號已停用",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Carousel/CreateCarouselPictures": {
       "post": {
         "tags": [
@@ -91,7 +1058,7 @@
           "Carousel"
         ],
         "summary": "查詢全部輪播圖",
-        "description": "依排序值由小到大回傳全部輪播圖。image 為 S3 預簽名網址(10 分鐘有效),可直接放入 img src。",
+        "description": "依排序值由小到大回傳全部輪播圖。image 為 CloudFront 永久網址,可直接放入 img src。",
         "responses": {
           "200": {
             "description": "成功,data 為輪播圖陣列",
@@ -129,17 +1096,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             }
           }
@@ -240,6 +1207,237 @@
           },
           "404": {
             "description": "找不到該輪播圖",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Faq/CreateFaq": {
+      "post": {
+        "tags": [
+          "Faq"
+        ],
+        "summary": "建立或更新 FAQ",
+        "description": "- **不帶 Id**(null 或省略):新增一筆 FAQ,排序值自動排在最後\r\n- **帶 Id**:更新該筆 FAQ 的全部欄位(排序值不變)",
+        "requestBody": {
+          "description": "FAQ 內容。新增時 Id 留空;更新時必須帶 Id",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaqModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaqModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateFaqModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功,data 為建立/更新後的完整 FAQ 資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaqResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "帶了 Id 但找不到該筆 FAQ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Faq/Faqs": {
+      "post": {
+        "tags": [
+          "Faq"
+        ],
+        "summary": "查詢 FAQ 列表(分頁)",
+        "description": "依條件篩選並分頁回傳 FAQ 列表,結果依排序值(orders)由小到大排列。\r\n**注意:此端點不使用統一包裝**,直接回傳 `{ totalCount, faqList }`。",
+        "requestBody": {
+          "description": "查詢條件。所有篩選欄位皆可省略(回傳全部);pageIndex 從 0 開始",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/FaqSearchModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "查詢結果:totalCount 為符合條件的總筆數,faqList 為當頁資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaqPaginationModel"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Faq/Preview/{faqId}": {
+      "get": {
+        "tags": [
+          "Faq"
+        ],
+        "summary": "取得單筆 FAQ 完整內容(預覽/編輯用)",
+        "parameters": [
+          {
+            "name": "faqId",
+            "in": "path",
+            "description": "FAQ 的 Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "成功,data 為該筆 FAQ 的完整內容(含答案 answer)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FaqModelResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該筆 FAQ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Faq/DeleteFaq/{faqId}": {
+      "delete": {
+        "tags": [
+          "Faq"
+        ],
+        "summary": "刪除一筆 FAQ",
+        "parameters": [
+          {
+            "name": "faqId",
+            "in": "path",
+            "description": "要刪除的 FAQ Id(GUID)",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "刪除成功(無回應內容)"
+          },
+          "404": {
+            "description": "找不到該筆 FAQ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Faq/EditFaqSort/{direction}": {
+      "put": {
+        "tags": [
+          "Faq"
+        ],
+        "summary": "調整 FAQ 排序(上移/下移一格)",
+        "description": "將指定 FAQ 與相鄰一筆交換排序位置。\r\n已在最前方再上移、或已在最後方再下移時,回傳 HTTP 200 但 `isSuccess: false`。",
+        "parameters": [
+          {
+            "name": "direction",
+            "in": "path",
+            "description": "移動方向:`up`(往前移)或 `down`(往後移)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "只需要帶 id(要移動的 FAQ Id),其餘欄位可省略",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/SortMoveModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "交換完成(isSuccess: true);或已到頂/到底無法移動(isSuccess: false)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該筆 FAQ",
             "content": {
               "application/json": {
                 "schema": {
@@ -443,17 +1641,17 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             },
             "text/json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             },
             "application/*+json": {
               "schema": {
-                "$ref": "#/components/schemas/SearchHomeCarouselModel"
+                "$ref": "#/components/schemas/SortMoveModel"
               }
             }
           }
@@ -646,7 +1844,7 @@
         ],
         "summary": "更新產品分類",
         "requestBody": {
-          "description": "分類內容,必須帶 Id。所有欄位都會被覆寫(含 orders 排序值)",
+          "description": "分類內容,必須帶 Id。orders 會被忽略,排序請用 EditCategorySort",
           "content": {
             "application/json": {
               "schema": {
@@ -839,6 +2037,10 @@
                     "type": "boolean",
                     "description": "是否上架"
                   },
+                  "IsProcessable": {
+                    "type": "boolean",
+                    "description": "是否為成品(已加工);false 表示未加工"
+                  },
                   "Unit": {
                     "maxLength": 50,
                     "type": "string",
@@ -864,13 +2066,37 @@
                     "type": "string",
                     "description": "規格(最多 50 字)"
                   },
+                  "Remark": {
+                    "maxLength": 500,
+                    "type": "string",
+                    "description": "備註(最多 500 字)。官網規格表的最後一列,沒填就不顯示"
+                  },
+                  "Brand": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "品牌(最多 50 字),例:NCA。官網 JSON-LD 的 brand,沒填就不輸出"
+                  },
+                  "Manufacturer": {
+                    "maxLength": 100,
+                    "type": "string",
+                    "description": "原廠製造商(最多 100 字)。只填已確認的原廠;沒填就不輸出,不會預設成航泰"
+                  },
+                  "SeoTitle": {
+                    "maxLength": 100,
+                    "type": "string",
+                    "description": "官網頁面 title 覆寫(最多 100 字)。沒填時由產生器組「產品名|分類|公司名」"
+                  },
                   "Description": {
                     "type": "string",
                     "description": "產品描述(無長度限制)"
                   },
-                  "CanOrder": {
-                    "type": "boolean",
-                    "description": "是否可訂購。true 顯示「客製化訂製」;false 顯示「來電詢問」"
+                  "ApplicationIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "推薦研磨場景:勾選的應用領域 Id。編輯時是全量替換,不帶等於全部取消"
                   },
                   "Grits": {
                     "type": "array",
@@ -901,6 +2127,9 @@
                 "IsActive": {
                   "style": "form"
                 },
+                "IsProcessable": {
+                  "style": "form"
+                },
                 "Unit": {
                   "style": "form"
                 },
@@ -916,10 +2145,22 @@
                 "Specification": {
                   "style": "form"
                 },
+                "Remark": {
+                  "style": "form"
+                },
+                "Brand": {
+                  "style": "form"
+                },
+                "Manufacturer": {
+                  "style": "form"
+                },
+                "SeoTitle": {
+                  "style": "form"
+                },
                 "Description": {
                   "style": "form"
                 },
-                "CanOrder": {
+                "ApplicationIds": {
                   "style": "form"
                 },
                 "Grits": {
@@ -965,7 +2206,7 @@
           "Product"
         ],
         "summary": "查詢產品列表(含分頁、篩選)",
-        "description": "coverURL 為第一張產品圖的 S3 預簽名網址(10 分鐘有效),沒有圖片時為空字串。\r\ncategoryName 格式為「主分類 > 次分類」。\r\npageIndex 從 0 開始;pageSize 省略時預設 10。",
+        "description": "coverURL 為第一張產品圖的 CloudFront 永久網址,沒有圖片時為空字串。\r\ncategoryName 格式為「主分類 > 次分類」。\r\npageIndex 從 0 開始;pageSize 省略時預設 10。",
         "parameters": [
           {
             "name": "keyword",
@@ -1031,7 +2272,7 @@
           "Product"
         ],
         "summary": "取得單一產品詳情(供編輯頁使用)",
-        "description": "回傳產品完整資料,含規格、番號價格表與圖片清單。\r\n圖片 URL 為 S3 預簽名網址(10 分鐘有效)。",
+        "description": "回傳產品完整資料,含規格、番號價格表與圖片清單。\r\n圖片 URL 為 CloudFront 永久網址。",
         "parameters": [
           {
             "name": "id",
@@ -1108,6 +2349,10 @@
                     "type": "boolean",
                     "description": "是否上架"
                   },
+                  "IsProcessable": {
+                    "type": "boolean",
+                    "description": "是否為成品(已加工);false 表示未加工"
+                  },
                   "Unit": {
                     "maxLength": 50,
                     "type": "string",
@@ -1133,13 +2378,37 @@
                     "type": "string",
                     "description": "規格(最多 50 字)"
                   },
+                  "Remark": {
+                    "maxLength": 500,
+                    "type": "string",
+                    "description": "備註(最多 500 字)。官網規格表的最後一列,沒填就不顯示"
+                  },
+                  "Brand": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "品牌(最多 50 字),例:NCA。官網 JSON-LD 的 brand,沒填就不輸出"
+                  },
+                  "Manufacturer": {
+                    "maxLength": 100,
+                    "type": "string",
+                    "description": "原廠製造商(最多 100 字)。只填已確認的原廠;沒填就不輸出,不會預設成航泰"
+                  },
+                  "SeoTitle": {
+                    "maxLength": 100,
+                    "type": "string",
+                    "description": "官網頁面 title 覆寫(最多 100 字)。沒填時由產生器組「產品名|分類|公司名」"
+                  },
                   "Description": {
                     "type": "string",
                     "description": "產品描述(無長度限制)"
                   },
-                  "CanOrder": {
-                    "type": "boolean",
-                    "description": "是否可訂購。true 顯示「客製化訂製」;false 顯示「來電詢問」"
+                  "ApplicationIds": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "description": "推薦研磨場景:勾選的應用領域 Id。編輯時是全量替換,不帶等於全部取消"
                   },
                   "Grits": {
                     "type": "array",
@@ -1176,6 +2445,9 @@
                 "IsActive": {
                   "style": "form"
                 },
+                "IsProcessable": {
+                  "style": "form"
+                },
                 "Unit": {
                   "style": "form"
                 },
@@ -1191,10 +2463,22 @@
                 "Specification": {
                   "style": "form"
                 },
+                "Remark": {
+                  "style": "form"
+                },
+                "Brand": {
+                  "style": "form"
+                },
+                "Manufacturer": {
+                  "style": "form"
+                },
+                "SeoTitle": {
+                  "style": "form"
+                },
                 "Description": {
                   "style": "form"
                 },
-                "CanOrder": {
+                "ApplicationIds": {
                   "style": "form"
                 },
                 "Grits": {
@@ -1330,6 +2614,67 @@
         }
       }
     },
+    "/api/Product/GetRecommendedProducts": {
+      "get": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "取得推薦商品清單(最多三項,供官網首頁顯示)",
+        "responses": {
+          "200": {
+            "description": "成功,data 為推薦商品陣列(ProductSearchResModel)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductSearchResModelListResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Product/UpdateRecommendedProducts": {
+      "put": {
+        "tags": [
+          "Product"
+        ],
+        "summary": "更新推薦商品清單(最多三項)",
+        "description": "傳入的 productIds 即為最終推薦清單(全量替換)。\r\n超過三項時回傳 isSuccess: false。",
+        "requestBody": {
+          "description": "要設為推薦的產品 Id 清單",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRecommendedModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRecommendedModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateRecommendedModel"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功；或超過三項時 isSuccess: false",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Product/EditProductSort/{id}/{direction}": {
       "put": {
         "tags": [
@@ -1388,7 +2733,7 @@
           "S3"
         ],
         "summary": "查詢圖庫圖片(分頁平鋪列表)",
-        "description": "回傳符合條件的圖片平鋪列表(依 S3 key 字母順序)。\r\nurl(原圖)與 smallImageUrl(縮圖)皆為 S3 預簽名網址,10 分鐘有效。\r\n刪除圖片時需要用到 directories + imageName / smallImageName 組合出 key。\r\npageIndex 從 0 開始;pageSize 省略時預設 20。",
+        "description": "回傳符合條件的圖片平鋪列表(依 S3 key 字母順序)。\r\nurl(原圖)與 smallImageUrl(縮圖)皆為 CloudFront 永久網址。\r\n刪除圖片時需要用到 directories + imageName / smallImageName 組合出 key。\r\npageIndex 從 0 開始;pageSize 省略時預設 20。",
         "parameters": [
           {
             "name": "directory",
@@ -1483,10 +2828,236 @@
           }
         }
       }
+    },
+    "/api/SitePublish/Publish": {
+      "post": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "排入一次整站重新發布",
+        "description": "流程:收集資料 → 產生整站 → 上傳(帶分層快取標頭)→ 刪掉已下架的舊物件 → 對網站 CDN 打一次 /*。\r\n            \r\n**這支端點立刻回應,不等發布完成。** 產生加上傳一百多個檔案要數十秒,而 CloudFront\r\n的 origin response timeout 預設 30 秒 —— 同步做的話會拿到 504 但發布其實還在跑,\r\n操作者以為失敗又按一次,兩個發布在 S3 上打架。\r\n            \r\n同時只會有一個發布在跑。正在跑時再按,會排隊等這輪結束後再跑一次;\r\n已經有排隊的話就併掉,不會累積。\r\n            \r\n回應的 data 是排入後的即時狀態,**結果要靠 Status 輪詢**。",
+        "responses": {
+          "200": {
+            "description": "已排入,data 為目前狀態",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitePublishStatusModelResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SitePublish/Status": {
+      "get": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "查詢整站發布的目前狀態",
+        "description": "狀態存在記憶體,服務重啟會回到 Idle。單台機器的規模這樣夠用,\r\n重啟後最多就是重按一次發布。",
+        "responses": {
+          "200": {
+            "description": "data 為目前狀態",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitePublishStatusModelResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SitePublish/History": {
+      "get": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "查詢官網發布紀錄(新到舊)",
+        "description": "回答的是「現在線上這版是什麼時候發布的」。刻意只記時間軸,\r\n不做版本回溯也不記錄每次改了什麼 —— 產出的是整站快照,要回溯就重新發布一次。",
+        "parameters": [
+          {
+            "name": "take",
+            "in": "query",
+            "description": "要取幾筆,預設 10,上限 100",
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "default": 10
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "data 為發布紀錄清單",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitePublishHistoryModelListResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SitePublish/Generate": {
+      "post": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "只產生靜態頁到本機目錄,不上傳",
+        "description": "開發用。把 `SiteGen:OutputRoot` 指到一個資料夾,用 Live Server 打開就能看結果。\r\n            \r\n每次都是整站重產,不做增量:改一個產品會連帶影響列表頁、分類頁、首頁區塊與 sitemap,\r\n維護依賴表容易寫錯而且錯了沒人發現。\r\n            \r\n有任何一頁失敗時 isSuccess 為 false,errors 列出失敗項目 —— 不會靜默成功。",
+        "responses": {
+          "200": {
+            "description": "產生完成,data 為產生結果摘要",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SitePublishResultModelResponseData"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SitePublish/PreviewNews/{newsId}": {
+      "get": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "預覽單則消息(後台「檢視」用)",
+        "description": "用產生官網的同一套模板渲染,data 是完整的 HTML 文件,後台放進 iframe 的 srcdoc 顯示。\r\n未上架的消息也能預覽;推薦產品只列上架中的,與正式產生一致。\r\n            \r\n頁面的 css / js / 字型指向本服務的 `/site-preview/`(產生器 Assets 的靜態檔),\r\n因為官網網域在預覽當下不一定已上線。",
+        "parameters": [
+          {
+            "name": "newsId",
+            "in": "path",
+            "description": "消息 Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "data 為完整 HTML",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該消息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/SitePublish/PreviewProduct/{productId}": {
+      "get": {
+        "tags": [
+          "SitePublish"
+        ],
+        "summary": "預覽單一產品(後台「檢視」用)",
+        "description": "與 PreviewNews 相同做法:用官網模板渲染,data 是完整 HTML。未上架的產品也能預覽;\r\n相關產品只從上架中的產品挑,規則與正式產生一致。",
+        "parameters": [
+          {
+            "name": "productId",
+            "in": "path",
+            "description": "產品 Id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "data 為完整 HTML",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StringResponseData"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該產品",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "AuthResponseModel": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "nullable": true
+          },
+          "name": {
+            "type": "string",
+            "nullable": true
+          },
+          "accessTokenExpiresAt": {
+            "type": "string",
+            "description": "Access Token 到期時間（UTC）",
+            "format": "date-time"
+          }
+        },
+        "additionalProperties": false,
+        "description": "登入/換發成功後回傳給前端的資料。Token 一律透過 httpOnly Cookie 傳遞,不在此暴露"
+      },
+      "AuthResponseModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AuthResponseModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
       "CategoryModel": {
         "required": [
           "name"
@@ -1511,12 +3082,18 @@
           },
           "orders": {
             "type": "number",
-            "description": "排序值。建立時忽略(自動排最後);更新時會覆寫",
+            "description": "排序值。建立與更新時都忽略(建立時自動排最後);調整排序請用 EditCategorySort",
             "format": "double"
           },
           "introduction": {
             "type": "string",
             "description": "分類簡介(可空)",
+            "nullable": true
+          },
+          "seoTitle": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "官網分類頁 title 覆寫(最多 100 字,可空)。沒填時由產生器組「分類名|產品介紹|公司名」",
             "nullable": true
           },
           "parentId": {
@@ -1528,6 +3105,231 @@
         },
         "additionalProperties": false,
         "description": "建立/更新產品分類的傳入資料"
+      },
+      "CreateFaqModel": {
+        "required": [
+          "answer",
+          "question"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "FAQ Id。新增時留空(null);更新時必填",
+            "format": "uuid",
+            "nullable": true
+          },
+          "question": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string",
+            "description": "問題內容(最多 200 字)"
+          },
+          "answer": {
+            "minLength": 1,
+            "type": "string",
+            "description": "答案內容(HTML 字串,無長度限制)"
+          },
+          "status": {
+            "type": "boolean",
+            "description": "是否上架顯示"
+          }
+        },
+        "additionalProperties": false,
+        "description": "建立/更新 FAQ 的傳入資料"
+      },
+      "Faq": {
+        "required": [
+          "answer",
+          "question"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "question": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string"
+          },
+          "answer": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "orders": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false
+      },
+      "FaqListModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "FAQ Id",
+            "format": "uuid"
+          },
+          "question": {
+            "type": "string",
+            "description": "問題內容",
+            "nullable": true
+          },
+          "status": {
+            "type": "boolean",
+            "description": "是否上架顯示"
+          },
+          "orders": {
+            "type": "number",
+            "description": "顯示用排序序號(資料庫排序值除以 10)",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "FAQ 列表中的單筆摘要"
+      },
+      "FaqModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "FAQ Id",
+            "format": "uuid"
+          },
+          "question": {
+            "type": "string",
+            "description": "問題內容",
+            "nullable": true
+          },
+          "answer": {
+            "type": "string",
+            "description": "答案內容(HTML 字串)",
+            "nullable": true
+          },
+          "status": {
+            "type": "boolean",
+            "description": "是否上架顯示"
+          }
+        },
+        "additionalProperties": false,
+        "description": "單筆 FAQ 完整內容(預覽/編輯用)"
+      },
+      "FaqModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/FaqModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "FaqPaginationModel": {
+        "type": "object",
+        "properties": {
+          "totalCount": {
+            "type": "integer",
+            "description": "符合篩選條件的總筆數(用於計算總頁數)",
+            "format": "int32"
+          },
+          "faqList": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FaqListModel"
+            },
+            "description": "當前頁的 FAQ 列表",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "FAQ 列表的分頁查詢結果(此模型不使用統一包裝,直接回傳)"
+      },
+      "FaqResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/Faq"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "FaqSearchModel": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "問題關鍵字(模糊比對);null 或空字串代表不篩選",
+            "nullable": true
+          },
+          "status": {
+            "type": "boolean",
+            "description": "依上架狀態篩選;null 代表不篩選",
+            "nullable": true
+          },
+          "pageIndex": {
+            "type": "integer",
+            "description": "頁碼,從 0 開始",
+            "format": "int32"
+          },
+          "pageSize": {
+            "type": "integer",
+            "description": "每頁筆數;省略時預設 10",
+            "format": "int32",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "FAQ 列表的查詢條件"
+      },
+      "ForgotPasswordModel": {
+        "required": [
+          "email"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "additionalProperties": false,
+        "description": "忘記密碼傳入資料"
       },
       "Grit": {
         "type": "object",
@@ -1600,6 +3402,77 @@
         "additionalProperties": false,
         "description": "產品番號與價格"
       },
+      "HomeApplication": {
+        "required": [
+          "picture",
+          "title",
+          "titleEn"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "titleEn": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string",
+            "description": "英文標題,官網顯示在磚的上方(例:Metalworking)"
+          },
+          "title": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string",
+            "description": "中文標題(例:金屬加工)"
+          },
+          "description": {
+            "maxLength": 200,
+            "minLength": 0,
+            "type": "string",
+            "description": "中文描述",
+            "nullable": true
+          },
+          "picture": {
+            "minLength": 1,
+            "type": "string",
+            "description": "背景圖的 S3 key(applications/ 前綴)"
+          },
+          "orders": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "boolean"
+          }
+        },
+        "additionalProperties": false,
+        "description": "首頁「應用領域」的一張磚"
+      },
+      "HomeApplicationResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomeApplication"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
       "HomeCarousel": {
         "required": [
           "picture"
@@ -1608,40 +3481,33 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "輪播圖 Id",
             "format": "uuid"
           },
           "picture": {
             "minLength": 1,
-            "type": "string",
-            "description": "圖片的 S3 內部路徑(非可直接顯示的網址;顯示請用查詢端點回傳的 image)"
+            "type": "string"
           },
           "title": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string",
-            "description": "標題",
             "nullable": true
           },
           "url": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string",
-            "description": "點擊後導向的連結(可能為 null)",
             "nullable": true
           },
           "orders": {
             "type": "number",
-            "description": "排序值(越小越前面)",
             "format": "double"
           },
           "status": {
-            "type": "boolean",
-            "description": "是否啟用顯示"
+            "type": "boolean"
           }
         },
-        "additionalProperties": false,
-        "description": "首頁輪播圖(資料庫實體,出現在新增/刪除輪播圖的回應中)"
+        "additionalProperties": false
       },
       "HomeCarouselResponseData": {
         "type": "object",
@@ -1711,6 +3577,26 @@
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
+      "LoginModel": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "additionalProperties": false,
+        "description": "登入傳入資料"
+      },
       "NewListModel": {
         "type": "object",
         "properties": {
@@ -1740,7 +3626,7 @@
           },
           "orders": {
             "type": "number",
-            "description": "顯示用排序序號(資料庫排序值除以 10)",
+            "description": "列表上顯示的序號,從 1 開始連續編號(含分頁位移)。\r\n**不是資料庫的排序值**,也不是 Id —— 排序一次就會重算,不要拿它當識別用。\r\n欄位名稱維持 `orders` 是因為前端已經在用,回應形狀不改。",
             "format": "double"
           },
           "introduction": {
@@ -1797,6 +3683,15 @@
             "type": "string",
             "description": "列表頁顯示的簡介(最多 100 字,可空)",
             "nullable": true
+          },
+          "productIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "內頁底部的推薦產品 Id,**陣列順序就是顯示順序**。整份替換:不帶或空陣列等於全部移除。",
+            "nullable": true
           }
         },
         "additionalProperties": false,
@@ -1812,50 +3707,41 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "消息 Id",
             "format": "uuid"
           },
           "title": {
             "maxLength": 50,
             "minLength": 0,
-            "type": "string",
-            "description": "消息標題"
+            "type": "string"
           },
           "classification": {
             "maxLength": 50,
             "minLength": 0,
-            "type": "string",
-            "description": "分類名稱"
+            "type": "string"
           },
           "date": {
             "type": "string",
-            "description": "發布日期(ISO 8601)",
             "format": "date-time"
           },
           "status": {
-            "type": "boolean",
-            "description": "是否上架顯示"
+            "type": "boolean"
           },
           "orders": {
             "type": "number",
-            "description": "排序值(越小越前面)",
             "format": "double"
           },
           "newContent": {
             "minLength": 1,
-            "type": "string",
-            "description": "消息內文(HTML 字串)"
+            "type": "string"
           },
           "introduction": {
             "maxLength": 100,
             "minLength": 0,
             "type": "string",
-            "description": "列表頁簡介(可能為 null)",
             "nullable": true
           }
         },
-        "additionalProperties": false,
-        "description": "最新消息(資料庫實體,出現在建立/更新消息的回應中)"
+        "additionalProperties": false
       },
       "NewsModel": {
         "type": "object",
@@ -1892,6 +3778,14 @@
           "introduction": {
             "type": "string",
             "description": "列表頁簡介(可能為 null)",
+            "nullable": true
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/NewsProductModel"
+            },
+            "description": "內頁底部的推薦產品,依設定的順序排列(含已下架的,後台要看得到才能移除)",
             "nullable": true
           }
         },
@@ -1941,6 +3835,37 @@
         },
         "additionalProperties": false,
         "description": "消息列表的分頁查詢結果(此模型不使用統一包裝,直接回傳)"
+      },
+      "NewsProductModel": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string",
+            "description": "產品 Id",
+            "format": "uuid"
+          },
+          "productName": {
+            "type": "string",
+            "description": "產品名稱",
+            "nullable": true
+          },
+          "categoryName": {
+            "type": "string",
+            "description": "分類完整名稱(主分類 > 次分類)",
+            "nullable": true
+          },
+          "coverURL": {
+            "type": "string",
+            "description": "封面圖(第一張產品圖,CloudFront 網址;沒有圖時為空字串)",
+            "nullable": true
+          },
+          "isActive": {
+            "type": "boolean",
+            "description": "是否上架。下架的產品官網不顯示,但關聯保留"
+          }
+        },
+        "additionalProperties": false,
+        "description": "消息的推薦產品(後台編輯畫面顯示用)"
       },
       "NewsResponseData": {
         "type": "object",
@@ -2025,6 +3950,10 @@
           "is_active": {
             "type": "boolean"
           },
+          "is_processable": {
+            "type": "boolean",
+            "nullable": true
+          },
           "grits": {
             "type": "array",
             "items": {
@@ -2032,7 +3961,7 @@
             },
             "nullable": true
           },
-          "productPicture": {
+          "productPictures": {
             "type": "array",
             "items": {
               "$ref": "#/components/schemas/ProductPicture"
@@ -2046,11 +3975,33 @@
             },
             "nullable": true
           },
-          "category": {
+          "subCategory": {
             "$ref": "#/components/schemas/ProductCategory"
           }
         },
         "additionalProperties": false
+      },
+      "ProductApplicationModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "應用領域 Id",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "description": "中文標題",
+            "nullable": true
+          },
+          "titleEn": {
+            "type": "string",
+            "description": "英文標題",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "產品勾選的應用領域"
       },
       "ProductCategory": {
         "required": [
@@ -2060,32 +4011,32 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "分類 Id",
             "format": "uuid"
           },
           "name": {
             "maxLength": 50,
             "minLength": 0,
-            "type": "string",
-            "description": "分類名稱"
+            "type": "string"
           },
           "status": {
-            "type": "boolean",
-            "description": "是否啟用"
+            "type": "boolean"
           },
           "orders": {
             "type": "number",
-            "description": "排序值(越小越前面)",
             "format": "double"
           },
           "introduction": {
             "type": "string",
-            "description": "分類簡介(可能為 null)",
+            "nullable": true
+          },
+          "seo_title": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
             "nullable": true
           },
           "parentId": {
             "type": "string",
-            "description": "父分類 Id;主分類為 null",
             "format": "uuid",
             "nullable": true
           },
@@ -2094,7 +4045,6 @@
             "items": {
               "$ref": "#/components/schemas/ProductCategory"
             },
-            "description": "子分類集合(導覽屬性,API 回應中通常為空陣列,請勿依賴)",
             "nullable": true
           },
           "products": {
@@ -2102,15 +4052,13 @@
             "items": {
               "$ref": "#/components/schemas/Product"
             },
-            "description": "所屬產品集合(導覽屬性,API 回應中通常為空陣列,請勿依賴)",
             "nullable": true
           },
           "parent": {
             "$ref": "#/components/schemas/ProductCategory"
           }
         },
-        "additionalProperties": false,
-        "description": "產品分類(資料庫實體,出現在建立/更新分類的回應中)"
+        "additionalProperties": false
       },
       "ProductCategoryResponseData": {
         "type": "object",
@@ -2153,6 +4101,10 @@
             "type": "boolean",
             "description": "是否上架"
           },
+          "isProcessable": {
+            "type": "boolean",
+            "description": "是否為成品(已加工);false 表示未加工"
+          },
           "subCategoryId": {
             "type": "string",
             "description": "所屬次分類 Id",
@@ -2188,14 +4140,30 @@
             "description": "規格",
             "nullable": true
           },
+          "remark": {
+            "type": "string",
+            "description": "備註",
+            "nullable": true
+          },
+          "brand": {
+            "type": "string",
+            "description": "品牌",
+            "nullable": true
+          },
+          "manufacturer": {
+            "type": "string",
+            "description": "原廠製造商",
+            "nullable": true
+          },
+          "seoTitle": {
+            "type": "string",
+            "description": "官網頁面 title 覆寫",
+            "nullable": true
+          },
           "description": {
             "type": "string",
             "description": "產品描述",
             "nullable": true
-          },
-          "canOrder": {
-            "type": "boolean",
-            "description": "是否可訂購"
           },
           "grits": {
             "type": "array",
@@ -2210,7 +4178,15 @@
             "items": {
               "$ref": "#/components/schemas/ProductPictureModel"
             },
-            "description": "產品圖片清單(含 S3 預簽名網址,10 分鐘有效)",
+            "description": "產品圖片清單(含 CloudFront 永久網址)",
+            "nullable": true
+          },
+          "applications": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductApplicationModel"
+            },
+            "description": "推薦研磨場景,依應用領域的排序值排列",
             "nullable": true
           }
         },
@@ -2286,6 +4262,9 @@
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
       "ProductPicture": {
+        "required": [
+          "url"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2299,8 +4278,7 @@
           "url": {
             "maxLength": 255,
             "minLength": 0,
-            "type": "string",
-            "nullable": true
+            "type": "string"
           },
           "product": {
             "$ref": "#/components/schemas/Product"
@@ -2317,7 +4295,7 @@
           },
           "url": {
             "type": "string",
-            "description": "S3 預簽名網址(10 分鐘有效)",
+            "description": "CloudFront 永久網址",
             "nullable": true
           }
         },
@@ -2342,6 +4320,11 @@
             "description": "分類完整名稱,格式「主分類 > 次分類」",
             "nullable": true
           },
+          "spec": {
+            "type": "string",
+            "description": "產品的規格與型號描述，中間用 /  作為分隔",
+            "nullable": true
+          },
           "orderType": {
             "type": "string",
             "description": "訂購方式顯示文字:「客製化訂製」或「來電詢問」",
@@ -2351,16 +4334,52 @@
             "type": "boolean",
             "description": "是否上架"
           },
+          "isRecommend": {
+            "type": "boolean",
+            "description": "是否為推薦商品"
+          },
           "coverURL": {
             "type": "string",
-            "description": "封面圖網址(第一張產品圖的 S3 預簽名網址,10 分鐘有效;沒有圖片時為空字串)",
+            "description": "封面圖網址(第一張產品圖的 CloudFront 永久網址;沒有圖片時為空字串)",
             "nullable": true
           }
         },
         "additionalProperties": false,
         "description": "產品列表中的單筆摘要"
       },
+      "ProductSearchResModelListResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProductSearchResModel"
+            },
+            "description": "實際回傳的資料內容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
       "Product_Spec": {
+        "required": [
+          "unit"
+        ],
         "type": "object",
         "properties": {
           "id": {
@@ -2384,7 +4403,18 @@
             "type": "string",
             "nullable": true
           },
+          "specification": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
           "unit": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string"
+          },
+          "equipment": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string",
@@ -2396,14 +4426,30 @@
             "type": "string",
             "nullable": true
           },
-          "specification": {
+          "is_recommend": {
+            "type": "boolean",
+            "nullable": true
+          },
+          "remark": {
+            "maxLength": 500,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "brand": {
             "maxLength": 50,
             "minLength": 0,
             "type": "string",
             "nullable": true
           },
-          "equipment": {
-            "maxLength": 50,
+          "manufacturer": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "seo_title": {
+            "maxLength": 100,
             "minLength": 0,
             "type": "string",
             "nullable": true
@@ -2412,14 +4458,62 @@
             "type": "string",
             "nullable": true
           },
-          "can_order": {
-            "type": "boolean"
-          },
           "product": {
             "$ref": "#/components/schemas/Product"
           }
         },
         "additionalProperties": false
+      },
+      "RegisterModel": {
+        "required": [
+          "email",
+          "name",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "maxLength": 100,
+            "minLength": 1,
+            "type": "string",
+            "description": "Email（同時作為登入帳號）",
+            "format": "email"
+          },
+          "password": {
+            "minLength": 8,
+            "type": "string",
+            "description": "密碼（至少 8 字元）"
+          },
+          "name": {
+            "maxLength": 50,
+            "minLength": 1,
+            "type": "string",
+            "description": "顯示名稱"
+          }
+        },
+        "additionalProperties": false,
+        "description": "註冊傳入資料"
+      },
+      "ResetPasswordModel": {
+        "required": [
+          "newPassword",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "token": {
+            "minLength": 1,
+            "type": "string",
+            "description": "忘記密碼信件中的 token"
+          },
+          "newPassword": {
+            "minLength": 8,
+            "type": "string",
+            "description": "新密碼（至少 8 字元）"
+          }
+        },
+        "additionalProperties": false,
+        "description": "重設密碼傳入資料"
       },
       "Response": {
         "type": "object",
@@ -2447,12 +4541,12 @@
         "properties": {
           "url": {
             "type": "string",
-            "description": "原圖網址(S3 預簽名,10 分鐘有效)",
+            "description": "原圖網址(CloudFront,永久有效)",
             "nullable": true
           },
           "smallImageUrl": {
             "type": "string",
-            "description": "縮圖網址(S3 預簽名,10 分鐘有效)",
+            "description": "縮圖網址(CloudFront,永久有效)",
             "nullable": true
           },
           "directories": {
@@ -2506,6 +4600,11 @@
             "description": "分類簡介(可能為 null)",
             "nullable": true
           },
+          "seoTitle": {
+            "type": "string",
+            "description": "官網分類頁 title 覆寫(可能為 null)",
+            "nullable": true
+          },
           "parentId": {
             "type": "string",
             "description": "父分類 Id;主分類為 null",
@@ -2554,6 +4653,81 @@
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
+      "SearchHomeApplicationModel": {
+        "type": "object",
+        "properties": {
+          "index": {
+            "type": "integer",
+            "description": "列表中的序號,從 0 開始",
+            "format": "int32"
+          },
+          "id": {
+            "type": "string",
+            "description": "應用領域 Id",
+            "format": "uuid"
+          },
+          "titleEn": {
+            "type": "string",
+            "description": "英文標題",
+            "nullable": true
+          },
+          "title": {
+            "type": "string",
+            "description": "中文標題",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "description": "中文描述(可能為 null)",
+            "nullable": true
+          },
+          "image": {
+            "type": "string",
+            "description": "背景圖網址(CloudFront,永久有效,可直接放 img src)",
+            "nullable": true
+          },
+          "status": {
+            "type": "boolean",
+            "description": "是否啟用顯示"
+          },
+          "orders": {
+            "type": "number",
+            "description": "排序值(越小越前面)",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false,
+        "description": "應用領域查詢結果項目;也作為排序端點的傳入資料(排序時只需帶 id)"
+      },
+      "SearchHomeApplicationModelListResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchHomeApplicationModel"
+            },
+            "description": "實際回傳的資料內容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
       "SearchHomeCarouselModel": {
         "type": "object",
         "properties": {
@@ -2579,7 +4753,7 @@
           },
           "image": {
             "type": "string",
-            "description": "圖片網址(S3 預簽名,10 分鐘有效,可直接放 img src)",
+            "description": "圖片網址(CloudFront,永久有效,可直接放 img src)",
             "nullable": true
           },
           "status": {
@@ -2624,6 +4798,259 @@
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
       },
+      "SitePublishHistoryModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "發布開始時間",
+            "format": "date-time"
+          },
+          "finishedAt": {
+            "type": "string",
+            "description": "發布完成時間",
+            "format": "date-time",
+            "nullable": true
+          },
+          "durationSeconds": {
+            "type": "integer",
+            "description": "耗時秒數,四捨五入到整數",
+            "format": "int32"
+          },
+          "trigger": {
+            "type": "string",
+            "description": "觸發來源:「手動」或「產品異動」之類",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean"
+          },
+          "fileCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "uploadedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deletedCount": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "cdnInvalidation": {
+            "type": "string",
+            "description": "Skipped(未設定 distribution id)、Succeeded、Failed",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "失敗項目。成功時為空陣列",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "一筆官網發布紀錄"
+      },
+      "SitePublishHistoryModelListResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SitePublishHistoryModel"
+            },
+            "description": "實際回傳的資料內容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "SitePublishResultModel": {
+        "type": "object",
+        "properties": {
+          "fileCount": {
+            "type": "integer",
+            "description": "產生器寫出的檔案數(含複製過去的 css / js / 圖片、sitemap.xml、robots.txt)",
+            "format": "int32"
+          },
+          "uploadedCount": {
+            "type": "integer",
+            "description": "上傳到網站 bucket 的檔案數。只產不發布時為 0",
+            "format": "int32"
+          },
+          "deletedCount": {
+            "type": "integer",
+            "description": "刪掉的舊物件數(這次產出裡沒有的 key)。已下架的產品頁必須真的從 bucket 消失,\r\n只更新不刪除會留下軟 404 被搜尋引擎索引。",
+            "format": "int32"
+          },
+          "cdnInvalidation": {
+            "type": "string",
+            "description": "CDN 失效結果:Skipped(未設定 SiteDistributionId)、Succeeded、Failed。\r\nFailed 不代表發布失敗 —— 檔案已經上去了,只是邊緣快取要等 TTL 到期。",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "失敗項目。非空即代表這次產出或發布不完整,不可當成成功",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "靜態頁產生 / 發布結果"
+      },
+      "SitePublishResultModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SitePublishResultModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "SitePublishStatusModel": {
+        "type": "object",
+        "properties": {
+          "phase": {
+            "type": "string",
+            "description": "Idle(未發布過)、Queued(排隊中)、Running(進行中)、Succeeded、Failed",
+            "nullable": true
+          },
+          "isBusy": {
+            "type": "boolean",
+            "description": "Queued 或 Running 時為 true。前端用它決定要不要繼續輪詢、按鈕要不要 disable"
+          },
+          "trigger": {
+            "type": "string",
+            "description": "觸發來源:「手動」或「儲存 XXX 後自動」。用來回答「網站怎麼突然重產了」",
+            "nullable": true
+          },
+          "startedAt": {
+            "type": "string",
+            "description": "本次(或上次)開始時間",
+            "format": "date-time",
+            "nullable": true
+          },
+          "finishedAt": {
+            "type": "string",
+            "description": "上次結束時間。Running 時為 null",
+            "format": "date-time",
+            "nullable": true
+          },
+          "fileCount": {
+            "type": "integer",
+            "description": "產生器寫出的檔案數",
+            "format": "int32"
+          },
+          "uploadedCount": {
+            "type": "integer",
+            "description": "上傳到網站 bucket 的檔案數",
+            "format": "int32"
+          },
+          "deletedCount": {
+            "type": "integer",
+            "description": "刪掉的舊物件數(這次產出裡沒有的 key)",
+            "format": "int32"
+          },
+          "cdnInvalidation": {
+            "type": "string",
+            "description": "CDN 失效結果:Skipped(未設定 SiteDistributionId)、Succeeded、Failed。\r\nFailed 不代表發布失敗 —— 檔案已經上去了,只是邊緣快取要等 TTL 到期。",
+            "nullable": true
+          },
+          "errors": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "失敗項目。非空即代表上次發布不完整",
+            "nullable": true
+          },
+          "hasQueuedRequest": {
+            "type": "boolean",
+            "description": "這一輪跑完還要再跑一次(發布途中又有人存檔)。\r\n前端據此繼續顯示進行中,不要閃一下完成又變回進行中。"
+          },
+          "hasUnpublishedChanges": {
+            "type": "boolean",
+            "description": "有已儲存但尚未發布的變更(目前來源是排序)。\r\n由後端保管,所以重新整理頁面不會消失。"
+          }
+        },
+        "additionalProperties": false,
+        "description": "整站發布的目前狀態,供後台輪詢"
+      },
+      "SitePublishStatusModelResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "$ref": "#/components/schemas/SitePublishStatusModel"
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "SortMoveModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "要移動的項目 Id",
+            "format": "uuid"
+          }
+        },
+        "additionalProperties": false,
+        "description": "排序移動的請求內容:只需要指定移動哪一筆,方向由路由帶"
+      },
       "StringIReadOnlyListResponseData": {
         "type": "object",
         "properties": {
@@ -2652,6 +5079,48 @@
         },
         "additionalProperties": false,
         "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "StringResponseData": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "業務狀態碼。200 為成功,其餘為失敗(404 找不到資料、400 輸入錯誤、500 系統錯誤)",
+            "format": "int32"
+          },
+          "message": {
+            "type": "string",
+            "description": "給使用者看的訊息(繁體中文),可直接顯示於前端提示",
+            "nullable": true
+          },
+          "isSuccess": {
+            "type": "boolean",
+            "description": "操作是否成功。注意:HTTP 200 時也可能為 false(例如排序已到頂/到底)"
+          },
+          "data": {
+            "type": "string",
+            "description": "實際回傳的資料內容",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "帶資料的統一回應包裝。JSON 形狀:{ data, code, message, isSuccess }"
+      },
+      "UpdateRecommendedModel": {
+        "type": "object",
+        "properties": {
+          "productIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "要設為推薦的產品 Id 清單，最多三項",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false,
+        "description": "設定推薦商品清單的請求模型"
       }
     },
     "securitySchemes": {

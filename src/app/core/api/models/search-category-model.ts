@@ -28,6 +28,11 @@ export interface SearchCategoryModel {
   introduction?: string | null;
 
   /**
+   * 官網分類頁 title 覆寫(可能為 null)
+   */
+  seoTitle?: string | null;
+
+  /**
    * 分類名稱
    */
   name?: string | null;

@@ -36,6 +36,8 @@
                     class="order-btn up-btn"
                     title="上移"
                     (click)="editCategorySort('main', 'up', category)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('cat-main:' + category.id + ':up')"
                   >
                     ▲
                   </button>
@@ -43,6 +45,8 @@
                     class="order-btn down-btn"
                     title="下移"
                     (click)="editCategorySort('main', 'down', category)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('cat-main:' + category.id + ':down')"
                   >
                     ▼
                   </button>
@@ -123,12 +127,16 @@
                   <button
                     class="order-btn up-btn"
                     (click)="editCategorySort('sub', 'up', category)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('cat-sub:' + category.id + ':up')"
                   >
                     ▲
                   </button>
                   <button
                     class="order-btn down-btn"
                     (click)="editCategorySort('sub', 'down', category)"
+                    [disabled]="sortLock.isBusy"
+                    [class.is-sorting]="sortLock.isBusyKey('cat-sub:' + category.id + ':down')"
                   >
                     ▼
                   </button>
@@ -229,8 +237,8 @@
               <td>{{ product.orderType }}</td>
               <td>
                 <div class="order-control">
-                  <button class="order-btn up-btn" (click)="editProductSort(product.productId, 'up')">▲</button>
-                  <button class="order-btn down-btn" (click)="editProductSort(product.productId, 'down')">▼</button>
+                  <button class="order-btn up-btn" (click)="editProductSort(product.productId, 'up')" [disabled]="sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('product:' + product.productId + ':up')">▲</button>
+                  <button class="order-btn down-btn" (click)="editProductSort(product.productId, 'down')" [disabled]="sortLock.isBusy" [class.is-sorting]="sortLock.isBusyKey('product:' + product.productId + ':down')">▼</button>
                 </div>
               </td>
               <td>
@@ -240,6 +248,7 @@
               </td>
               <td>
                 <div class="action-buttons">
+                  <button class="view-btn" (click)="previewProduct(product.productId)">檢視</button>
                   <button class="edit-btn" (click)="editProduct(product.productId)">編輯</button>
                   <button class="delete-btn" (click)="deleteProduct(product.productId)">刪除</button>
                 </div>
@@ -311,6 +320,17 @@
         class="form-control"
         [placeholder]="'分類介紹'"
         [(ngModel)]="newCategoryData.introduction"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">SEO 標題</label>
+      <input
+        type="text"
+        class="form-control"
+        maxlength="100"
+        [placeholder]="'官網分類頁的瀏覽器標題(選填)'"
+        [(ngModel)]="newCategoryData.seoTitle"
       />
     </div>
 
