@@ -1,0 +1,19 @@
+<div class="preview-bar">
+  <button type="button" class="btn btn-outline" (click)="back()">
+    <i class="fas fa-arrow-left"></i>
+    返回列表
+  </button>
+  <span class="preview-hint">以下為官網實際樣式的預覽(含未上架的內容),頁面內的連結在預覽中不可點</span>
+</div>
+
+<div class="preview-state" *ngIf="loading">載入中...</div>
+<div class="preview-state" *ngIf="error">{{ error }}</div>
+
+<!-- 後端用產生官網的同一套模板渲染整頁,這裡原樣放進 iframe,
+     樣式才不會被後台的全域 CSS 汙染,也不會被 Angular 的 HTML 清理拿掉 style 屬性 -->
+<iframe
+  *ngIf="html"
+  class="preview-frame"
+  title="官網預覽"
+  [srcdoc]="html"
+></iframe>

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpService } from 'src/app/share/service/http.service';
 import { SitePublishService } from 'src/app/share/service/site-publish.service';
+import { SortLockService } from 'src/app/share/service/sort-lock.service';
 import { environment } from 'src/environments/environment';
 import {
   NewListModel,
@@ -32,6 +33,8 @@ export class ManageComponent implements OnInit {
     private route: Router,
     private http: HttpService,
     private sitePublish: SitePublishService,
+    /** 模板要讀 isBusy / isBusyKey,所以是 public */
+    public sortLock: SortLockService,
   ) {}
   ngOnInit(): void {
     this.sitePublish.refresh();
@@ -84,10 +87,14 @@ export class ManageComponent implements OnInit {
    */
   editNewsSort(newId: string | undefined, direction: 'up' | 'down') {
     if (!newId) return;
-    this.http
-      .put<Response>(`${environment.apiUrl}News/EditNewsSort/${direction}`, {
-        id: newId,
-      })
+    this.sortLock
+      .run(
+        `news:${newId}:${direction}`,
+        this.http.put<Response>(
+          `${environment.apiUrl}News/EditNewsSort/${direction}`,
+          { id: newId }
+        )
+      )
       .subscribe({
         next: (res) => {
           // 已在最前/最後是 HTTP 200 + isSuccess false,不是錯誤,也不算有變更
@@ -99,7 +106,7 @@ export class ManageComponent implements OnInit {
           this.sitePublish.refresh();
           this.shearchNews();
         },
-        error: () => alert('排序失敗,請稍後再試。'),
+        error: (err) => alert(SortLockService.message(err)),
       });
   }
 
@@ -108,6 +115,8 @@ export class ManageComponent implements OnInit {
     this.http
       .delete(`${environment.apiUrl}News/DeleteNews/${newId}`)
       .subscribe((x) => {
+        // 內容異動會讓後端自動排入整站重新發布,重讀狀態讓 navbar 立刻反映
+        this.sitePublish.refresh();
         this.newList = this.newList.filter((y) => {
           if (y.id != newId) {
             return true;

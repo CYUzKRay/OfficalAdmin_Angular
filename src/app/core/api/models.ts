@@ -13,6 +13,7 @@ export type { NewListModel } from './models/new-list-model';
 export type { NewModel } from './models/new-model';
 export type { News } from './models/news';
 export type { NewsModel } from './models/news-model';
+export type { NewsProductModel } from './models/news-product-model';
 export type { NewsModelResponseData } from './models/news-model-response-data';
 export type { NewsPaginationModel } from './models/news-pagination-model';
 export type { NewsResponseData } from './models/news-response-data';

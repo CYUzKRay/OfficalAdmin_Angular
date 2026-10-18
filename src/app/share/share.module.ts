@@ -11,6 +11,7 @@ import { PaginationComponent } from './pagination/pagination.component';
 import { LoadingComponent } from './loading/loading.component';
 import { ModalComponent } from './modal/modal.component';
 import { PublishPendingComponent } from './publish-pending/publish-pending.component';
+import { SitePreviewComponent } from './site-preview/site-preview.component';
 
 let exportComponents = [
   ImageCropperComponent,
@@ -20,6 +21,7 @@ let exportComponents = [
   LoadingComponent,
   ModalComponent,
   PublishPendingComponent,
+  SitePreviewComponent,
 ];
 let exportModules = [FormsModule, HttpClientModule];
 @NgModule({

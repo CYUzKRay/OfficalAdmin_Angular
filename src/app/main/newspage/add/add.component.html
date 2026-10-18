@@ -111,6 +111,41 @@
           </div>
         </div>
 
+        <!-- 內頁底部的推薦產品 -->
+        <div class="form-section">
+          <div class="form-group">
+            <label>推薦產品</label>
+            <div class="form-help">顯示在官網消息內頁的最底部,順序即顯示順序;下架的產品官網不會顯示</div>
+            <table class="data-table news-products" *ngIf="recommendedProducts.length > 0">
+              <tbody>
+                <tr *ngFor="let p of recommendedProducts; let i = index">
+                  <td style="width: 70px;">
+                    <img *ngIf="p.coverURL" [src]="p.coverURL" [alt]="p.productName" class="news-product-cover" />
+                  </td>
+                  <td>
+                    {{ p.productName }}
+                    <span class="news-product-inactive" *ngIf="!p.isActive">(已下架,官網不顯示)</span>
+                    <div class="news-product-category">{{ p.categoryName }}</div>
+                  </td>
+                  <td style="width: 90px;">
+                    <div class="order-control">
+                      <button type="button" class="order-btn up-btn" [disabled]="i === 0" (click)="moveProduct(i, -1)">▲</button>
+                      <button type="button" class="order-btn down-btn" [disabled]="i === recommendedProducts.length - 1" (click)="moveProduct(i, 1)">▼</button>
+                    </div>
+                  </td>
+                  <td style="width: 80px;">
+                    <button type="button" class="delete-btn" (click)="removeProduct(i)">移除</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="btn btn-outline" (click)="openProductModal()">
+              <i class="fas fa-plus"></i>
+              選擇推薦產品
+            </button>
+          </div>
+        </div>
+
         <!-- 表單操作按鈕 -->
         <div class="form-actions">
           <button type="button" class="btn btn-outline" (click)="Cancel()">
@@ -142,3 +177,49 @@
   </div>
 </div>
 <app-loading *ngIf="isFinish"> </app-loading>
+
+<!-- 選擇推薦產品彈窗 -->
+<app-modal [isOpen]="isProductModalOpen" [title]="'選擇推薦產品'" (closeModal)="isProductModalOpen = false">
+  <div class="modal-body">
+    <input
+      type="text"
+      class="form-control"
+      placeholder="搜尋產品名稱或分類"
+      [(ngModel)]="productKeyword"
+      [ngModelOptions]="{ standalone: true }"
+      style="margin-bottom: 12px;"
+    />
+    <div style="max-height: 420px; overflow-y: auto;">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th width="10%">選取</th>
+            <th width="15%">圖片</th>
+            <th>產品名稱</th>
+            <th width="30%">分類</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of filteredProducts">
+            <td>
+              <input type="checkbox" [checked]="isPending(p)" (change)="togglePending(p, $any($event.target).checked)" />
+            </td>
+            <td><img *ngIf="p.coverURL" [src]="p.coverURL" class="news-product-cover" /></td>
+            <td>
+              {{ p.productName }}
+              <span class="news-product-inactive" *ngIf="!p.isActive">(已下架)</span>
+            </td>
+            <td>{{ p.categoryName }}</td>
+          </tr>
+          <tr *ngIf="allProducts.length === 0">
+            <td colspan="4" style="text-align: center; padding: 20px;">載入中或無產品...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="form-actions" style="margin-top: 15px; text-align: right;">
+    <span style="margin-right: 12px; color: #888;">已選 {{ pendingProductIds.length }} 項</span>
+    <button type="button" class="btn btn-success" (click)="confirmProducts()">確定</button>
+  </div>
+</app-modal>

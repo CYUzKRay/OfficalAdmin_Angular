@@ -1,10 +1,16 @@
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component } from '@angular/core';
 import { HttpService } from 'src/app/share/service/http.service';
-import { ImageResult } from 'src/app/share/picture/picture-manage/pictureManageResult';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { environment } from 'src/environments/environment';
-import { NewsModelResponseData, NewsResponseData, NewModel } from 'src/app/core/api/models';
+import {
+  NewsModelResponseData,
+  NewsResponseData,
+  NewModel,
+  NewsProductModel,
+  ProductSearchResModel,
+  ProductPaginationModelResponseData,
+} from 'src/app/core/api/models';
 
 @Component({
   selector: 'app-add',
@@ -22,6 +28,16 @@ export class AddComponent {
     newContent: '',
   };
   editId: string = '';
+
+  // ── 內頁底部的推薦產品 ──
+  /** 已選的推薦產品,陣列順序就是官網顯示順序 */
+  recommendedProducts: NewsProductModel[] = [];
+  isProductModalOpen = false;
+  /** 選擇彈窗用的全部產品,第一次開彈窗才載入 */
+  allProducts: ProductSearchResModel[] = [];
+  productKeyword = '';
+  /** 彈窗裡勾選中的產品 Id,按確定才寫回 recommendedProducts */
+  pendingProductIds: string[] = [];
   gethtml: SafeHtml = '';
   isFinish: boolean = false;
 
@@ -50,6 +66,7 @@ export class AddComponent {
             this.gethtml = newsData.data?.newContent ?? '';
             this.uploadata.newContent = newsData.data?.newContent ?? '';
             this.uploadata.id = this.editId;
+            this.recommendedProducts = newsData.data?.products ?? [];
             this.isFinish = false;
           });
       }
@@ -94,6 +111,9 @@ export class AddComponent {
     const postData = {
       ...this.uploadata,
       id: this.uploadata.id || null,
+      productIds: this.recommendedProducts
+        .map((p) => p.productId)
+        .filter((id): id is string => !!id),
     };
 
     this.http
@@ -107,8 +127,84 @@ export class AddComponent {
       });
   }
 
-  GetImageUrl($event: ImageResult) {
-    const imgBase64 = $event.base64URL;
-    navigator.clipboard.writeText(imgBase64);
+  // ================= 推薦產品 =================
+  openProductModal() {
+    this.pendingProductIds = this.recommendedProducts
+      .map((p) => p.productId)
+      .filter((id): id is string => !!id);
+    this.productKeyword = '';
+    this.isProductModalOpen = true;
+    if (this.allProducts.length === 0) {
+      this.http
+        .get<ProductPaginationModelResponseData>(environment.apiUrl + 'Product/GetProducts', {
+          pageIndex: 0,
+          pageSize: 1000,
+        })
+        .subscribe((res) => {
+          this.allProducts = res.data?.productList ?? [];
+        });
+    }
+  }
+
+  /** 依名稱或分類篩選;已勾選的排前面,方便確認 */
+  get filteredProducts(): ProductSearchResModel[] {
+    const keyword = this.productKeyword.trim().toLowerCase();
+    return this.allProducts
+      .filter(
+        (p) =>
+          !keyword ||
+          (p.productName ?? '').toLowerCase().includes(keyword) ||
+          (p.categoryName ?? '').toLowerCase().includes(keyword),
+      )
+      .sort((a, b) => Number(this.isPending(b)) - Number(this.isPending(a)));
+  }
+
+  isPending(product: ProductSearchResModel): boolean {
+    return !!product.productId && this.pendingProductIds.includes(product.productId);
+  }
+
+  togglePending(product: ProductSearchResModel, checked: boolean) {
+    const id = product.productId;
+    if (!id) return;
+    // 新勾的接在最後,保留原本已排好的順序
+    this.pendingProductIds = checked
+      ? [...this.pendingProductIds, id]
+      : this.pendingProductIds.filter((x) => x !== id);
+  }
+
+  confirmProducts() {
+    const existing = new Map(this.recommendedProducts.map((p) => [p.productId, p]));
+    const byId = new Map(this.allProducts.map((p) => [p.productId, p]));
+    this.recommendedProducts = this.pendingProductIds.map((id) => {
+      const kept = existing.get(id);
+      if (kept) return kept;
+      const p = byId.get(id)!;
+      return {
+        productId: p.productId,
+        productName: p.productName,
+        categoryName: p.categoryName,
+        coverURL: p.coverURL,
+        isActive: p.isActive,
+      };
+    });
+    this.isProductModalOpen = false;
+  }
+
+  moveProduct(index: number, step: -1 | 1) {
+    const target = index + step;
+    if (target < 0 || target >= this.recommendedProducts.length) return;
+    const list = [...this.recommendedProducts];
+    [list[index], list[target]] = [list[target], list[index]];
+    this.recommendedProducts = list;
+  }
+
+  removeProduct(index: number) {
+    this.recommendedProducts = this.recommendedProducts.filter((_, i) => i !== index);
+  }
+
+  GetImageUrl(imageUrl: string) {
+    navigator.clipboard.writeText(imageUrl).then(() => {
+      alert('已複製圖片網址！請在編輯器中「插入圖片」並貼上。');
+    });
   }
 }

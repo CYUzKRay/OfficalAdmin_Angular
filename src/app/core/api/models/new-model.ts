@@ -33,6 +33,11 @@ export interface NewModel {
   newContent: string;
 
   /**
+   * 內頁底部的推薦產品 Id,**陣列順序就是顯示順序**。整份替換:不帶或空陣列等於全部移除。
+   */
+  productIds?: Array<string> | null;
+
+  /**
    * 是否上架顯示
    */
   status?: boolean;
