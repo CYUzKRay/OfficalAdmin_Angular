@@ -58,6 +58,33 @@
   box-shadow: 0 4px 12px rgba(73, 159, 182, 0.3);
 }
 
+/* 上傳中。放在 :hover 之後,否則滑過去還會浮起來,看起來像可以按 */
+.upload-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  background: var(--primary-color);
+}
+
+.upload-spinner {
+  display: inline-block;
+  width: 13px;
+  height: 13px;
+  margin-right: 6px;
+  vertical-align: -1px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: upload-spin 0.7s linear infinite;
+}
+
+@keyframes upload-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .preview-area {
   border: 3px dashed var(--border-color);
   border-radius: 12px;
@@ -270,6 +297,11 @@
 .toast.show {
   opacity: 1;
   transform: translateY(0);
+}
+
+/* 失敗用紅底。成功沿用原本的深色底,不另外上色 */
+.toast.toast-error {
+  background: #c0392b;
 }
 
 input[type="file"] {

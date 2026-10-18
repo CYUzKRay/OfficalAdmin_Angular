@@ -2,6 +2,37 @@ import { Component, OnInit, forwardRef } from '@angular/core';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
 
 declare var CKEDITOR: any;
+
+// ===================================
+// 字體樣式 / 字級大小設定（兩份編輯器設定共用）
+// 注意：standard 預設組合不含 font 插件，必須在 extraPlugins 加入 'font'，
+// 否則工具列上的 Font / FontSize 會被靜默忽略。
+// 格式：「顯示名稱/CSS 值」，以分號分隔。
+// ===================================
+const FONT_CONFIG = {
+  font_names: [
+    '微軟正黑體/Microsoft JhengHei, 微軟正黑體, PingFang TC, sans-serif',
+    '新細明體/PMingLiU, 新細明體, MingLiU, serif',
+    '標楷體/DFKai-SB, BiauKai, 標楷體, serif',
+    '蘋方/PingFang TC, Microsoft JhengHei, sans-serif',
+    '思源黑體/Noto Sans TC, Microsoft JhengHei, sans-serif',
+    '思源宋體/Noto Serif TC, PMingLiU, serif',
+    'Arial/Arial, Helvetica, sans-serif',
+    'Helvetica/Helvetica, Arial, sans-serif',
+    'Georgia/Georgia, serif',
+    'Times New Roman/Times New Roman, Times, serif',
+    'Verdana/Verdana, Geneva, sans-serif',
+    'Tahoma/Tahoma, Geneva, sans-serif',
+    'Courier New/Courier New, Courier, monospace',
+  ].join(';'),
+  font_defaultLabel: '字體',
+  fontSize_sizes: [
+    10, 12, 13, 14, 15, 16, 18, 20, 22, 24, 28, 32, 36, 40, 48, 56, 64,
+  ]
+    .map((size) => `${size}px/${size}px`)
+    .join(';'),
+  fontSize_defaultLabel: '字級',
+};
 @Component({
   selector: 'app-editor',
   templateUrl: './editor.component.html',
@@ -89,9 +120,6 @@ export class EditorComponent implements OnInit, ControlValueAccessor {
                     <div class="image-gallery">
                       <div class="image-item">
                         <img src="${img}" alt="環保砂布產品展示">
-                      </div>
-                      <div class="image-item">
-                        <img src="${img}" alt="環保砂布應用場景">
                       </div>
                     </div>
                   `);
@@ -418,7 +446,8 @@ export class EditorComponent implements OnInit, ControlValueAccessor {
         ],
         allowedContent: true,
         extraPlugins:
-          'faq,tableresize,tabletools,tableselection,customelements,customcolors,justify',
+          'faq,tableresize,tabletools,tableselection,customelements,customcolors,justify,font',
+        ...FONT_CONFIG,
         height: 350, // 修正：設置合適的預設高度
         width: '100%', // 新增：確保寬度填滿容器
         resize_enabled: true, // 新增：允許使用者調整大小
@@ -731,7 +760,8 @@ export class EditorComponent implements OnInit, ControlValueAccessor {
       ],
       allowedContent: true,
       extraPlugins:
-        'faq,tableresize,tabletools,tableselection,customelements,customcolors,justify',
+        'faq,tableresize,tabletools,tableselection,customelements,customcolors,justify,font',
+      ...FONT_CONFIG,
       height: 400,
       toolbar: [
         {

@@ -21,8 +21,13 @@
         </option>
       </select>
 
-      <button class="upload-btn" (click)="triggerFileUpload()">
-        按鈕點擊後上傳
+      <button
+        class="upload-btn"
+        (click)="triggerFileUpload()"
+        [disabled]="isUploading"
+      >
+        <span class="upload-spinner" *ngIf="isUploading"></span>
+        {{ isUploading ? '上傳中…' : '按鈕點擊後上傳' }}
       </button>
     </div>
     <div class="preview-area" id="previewArea" (click)="uploadPreviewImage()">
@@ -92,4 +97,10 @@
   </div>
 </div>
 
-<div class="toast" id="toast"></div>
+<div
+  class="toast"
+  [class.show]="!!toastMessage"
+  [class.toast-error]="toastIsError"
+>
+  {{ toastMessage }}
+</div>

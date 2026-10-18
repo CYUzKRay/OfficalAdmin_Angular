@@ -2,6 +2,7 @@ import {
   Component,
   ElementRef,
   EventEmitter,
+  OnDestroy,
   OnInit,
   Output,
   ViewChild,
@@ -24,7 +25,7 @@ export interface awsImageUploadContent {
   templateUrl: './picture-manage.component.html',
   styleUrls: ['./picture-manage.component.css'],
 })
-export class PictureManageComponent implements OnInit {
+export class PictureManageComponent implements OnInit, OnDestroy {
   @ViewChild('fileInput') fileInputRef!: ElementRef;
   @Output() imageUpload = new EventEmitter<awsImageUploadContent>();
   @Output() error = new EventEmitter<string>();
@@ -42,6 +43,14 @@ export class PictureManageComponent implements OnInit {
   pageIndex = 0;
   pageSize = 20;
   totalCount = 0;
+
+  /** 上傳進行中。按鈕轉圈並 disabled,避免同一張圖被連點送出好幾次 */
+  isUploading = false;
+
+  /** 右下角提示訊息。空字串代表不顯示 */
+  toastMessage = '';
+  toastIsError = false;
+  private toastTimer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(private http: HttpService) {}
 
@@ -116,11 +125,63 @@ export class PictureManageComponent implements OnInit {
     formdata.append('directory', this.selectDirectory);
     formdata.append('image', this.orginialimage);
 
+    this.isUploading = true;
     this.http
       .postForm(`${environment.apiUrl}Picture/CreatePicture`, formdata)
-      .subscribe((x) => {
-        console.log(x);
+      .subscribe({
+        next: () => {
+          // 後端是 return Ok() 空回應,沒有 Response 外層,所以沒有 isSuccess 可檢查 ——
+          // 走到 next 就代表 HTTP 2xx,就是成功
+          this.isUploading = false;
+          this.showToast('上傳成功');
+          this.resetUploadForm();
+          // 重讀圖庫,新上傳的圖才會出現在下面的列表
+          this.loadImages();
+        },
+        error: () => {
+          this.isUploading = false;
+          this.showToast('上傳失敗,請稍後再試。', true);
+        },
       });
+  }
+
+  /**
+   * 清掉上傳區,讓它回到「待上傳」的樣子。
+   *
+   * 預覽區是 onFileSelected 直接改 innerHTML 做出來的(既有寫法),
+   * 所以這裡也只能用同樣的方式還原。
+   */
+  private resetUploadForm() {
+    this.title = null;
+    this.orginialimage = null;
+    this.photos = [];
+
+    const previewArea = document.getElementById('previewArea');
+    if (previewArea) {
+      previewArea.style.width = '';
+      previewArea.innerHTML = '<div class="preview-placeholder">待上傳預覽圖</div>';
+      previewArea.classList.remove('has-image');
+    }
+
+    // file input 的 value 要清掉,否則**再選同一個檔案不會觸發 change**,
+    // 使用者會以為選取失效
+    if (this.fileInputRef) {
+      this.fileInputRef.nativeElement.value = '';
+    }
+  }
+
+  /** 右下角提示,三秒後自動消失。樣式(.toast / .toast.show)本來就在 css 裡,只是沒人用 */
+  private showToast(message: string, isError = false) {
+    this.toastMessage = message;
+    this.toastIsError = isError;
+
+    if (this.toastTimer !== null) {
+      clearTimeout(this.toastTimer);
+    }
+    this.toastTimer = setTimeout(() => {
+      this.toastMessage = '';
+      this.toastTimer = null;
+    }, 3000);
   }
 
   uploadPreviewImage() {
@@ -157,6 +218,12 @@ export class PictureManageComponent implements OnInit {
   }
 
   deleteSelected() {}
+
+  ngOnDestroy(): void {
+    if (this.toastTimer !== null) {
+      clearTimeout(this.toastTimer);
+    }
+  }
 
   base64ToBlob(base64: string) {
     const parts = base64.split(',');
