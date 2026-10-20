@@ -3214,13 +3214,25 @@
           },
           "introduction": {
             "type": "string",
-            "description": "分類簡介(可空)",
+            "description": "分類說明(可空)。編輯器產出的 HTML,官網顯示在分類頁第 1 頁的產品清單下方",
             "nullable": true
           },
           "seoTitle": {
             "maxLength": 100,
             "type": "string",
             "description": "官網分類頁 title 覆寫(最多 100 字,可空)。沒填時由產生器組「分類名|產品介紹|公司名」",
+            "nullable": true
+          },
+          "heading": {
+            "maxLength": 50,
+            "type": "string",
+            "description": "官網分類頁的可見 H1(最多 50 字,可空)。沒填時 H1 用分類名稱且視覺隱藏",
+            "nullable": true
+          },
+          "summary": {
+            "maxLength": 150,
+            "type": "string",
+            "description": "官網分類頁標題下的一句短介紹(純文字,最多 150 字,可空)。也優先拿來當 meta description",
             "nullable": true
           },
           "parentId": {
@@ -4162,6 +4174,18 @@
             "type": "string",
             "nullable": true
           },
+          "heading": {
+            "maxLength": 50,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "summary": {
+            "maxLength": 150,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
           "parentId": {
             "type": "string",
             "format": "uuid",
@@ -4735,12 +4759,22 @@
           },
           "introduction": {
             "type": "string",
-            "description": "分類簡介(可能為 null)",
+            "description": "分類說明 HTML(可能為 null)",
             "nullable": true
           },
           "seoTitle": {
             "type": "string",
             "description": "官網分類頁 title 覆寫(可能為 null)",
+            "nullable": true
+          },
+          "heading": {
+            "type": "string",
+            "description": "官網分類頁的可見 H1(可能為 null)",
+            "nullable": true
+          },
+          "summary": {
+            "type": "string",
+            "description": "官網分類頁標題下的短介紹(可能為 null)",
             "nullable": true
           },
           "parentId": {

@@ -314,13 +314,33 @@
     </div>
 
     <div class="form-group">
-      <label class="form-label required">分類介紹</label>
+      <label class="form-label">頁面標題(H1)</label>
       <input
         type="text"
         class="form-control"
-        [placeholder]="'分類介紹'"
-        [(ngModel)]="newCategoryData.introduction"
+        maxlength="50"
+        [placeholder]="'官網分類頁顯示的大標題(選填),例:日本 NCA 野牛牌砂布'"
+        [(ngModel)]="newCategoryData.heading"
       />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">短介紹(顯示在頁面標題下方,選填)</label>
+      <input
+        type="text"
+        class="form-control"
+        maxlength="150"
+        [placeholder]="'一句話介紹這個分類,也會用在搜尋結果的描述'"
+        [(ngModel)]="newCategoryData.summary"
+      />
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">分類說明(顯示在官網分類頁產品清單下方,選填)</label>
+      <app-editor
+        [(ngModel)]="newCategoryData.introduction"
+        [ngModelOptions]="{ standalone: true }"
+      ></app-editor>
     </div>
 
     <div class="form-group">

@@ -23,7 +23,7 @@ export interface SearchCategoryModel {
   index?: number;
 
   /**
-   * 分類簡介(可能為 null)
+   * 分類說明 HTML,官網顯示在分類頁產品清單下方(可空)
    */
   introduction?: string | null;
 
@@ -31,6 +31,16 @@ export interface SearchCategoryModel {
    * 官網分類頁 title 覆寫(可能為 null)
    */
   seoTitle?: string | null;
+
+  /**
+   * 官網分類頁的可見 H1(最多 50 字,可空)
+   */
+  heading?: string | null;
+
+  /**
+   * 官網分類頁標題下的一句短介紹(純文字,最多 150 字,可空)
+   */
+  summary?: string | null;
 
   /**
    * 分類名稱

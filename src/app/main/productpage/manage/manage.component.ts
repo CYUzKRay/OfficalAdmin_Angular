@@ -31,6 +31,8 @@ export class ManageComponent {
     status: true,
     introduction: '',
     seoTitle: '',
+    heading: '',
+    summary: '',
     parentId: null,
   };
 
@@ -85,6 +87,8 @@ export class ManageComponent {
     this.newCategoryData.status = category.status;
     this.newCategoryData.introduction = category.introduction;
     this.newCategoryData.seoTitle = category.seoTitle ?? '';
+    this.newCategoryData.heading = category.heading ?? '';
+    this.newCategoryData.summary = category.summary ?? '';
     this.isCategorayEditing = true;
   }
 
@@ -99,6 +103,8 @@ export class ManageComponent {
       status: true,
       introduction: '',
       seoTitle: '',
+      heading: '',
+      summary: '',
       parentId: null,
     };
   }
@@ -231,6 +237,8 @@ export class ManageComponent {
     this.newCategoryData.status = category.status;
     this.newCategoryData.introduction = category.introduction;
     this.newCategoryData.seoTitle = category.seoTitle ?? '';
+    this.newCategoryData.heading = category.heading ?? '';
+    this.newCategoryData.summary = category.summary ?? '';
     this.isCategoryModalOpen = true;
     this.categoryModalTitle = '修改主分類';
     this.isCategorayEditing = true;
