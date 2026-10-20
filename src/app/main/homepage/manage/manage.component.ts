@@ -94,6 +94,10 @@ export class ManageComponent implements OnInit {
       });
   }
 
+  editCarousel(carousel: SearchHomeCarouselModel) {
+    this.route.navigate(['/main/home/edit', carousel.id]);
+  }
+
   editCarouselSort(direction: string, carousel: SearchHomeCarouselModel) {
     this.sortLock
       .run(

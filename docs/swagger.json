@@ -1052,6 +1052,103 @@
         }
       }
     },
+    "/api/Carousel/EditCarousel": {
+      "put": {
+        "tags": [
+          "Carousel"
+        ],
+        "summary": "編輯輪播圖",
+        "description": "以 `multipart/form-data` 傳送。picture 不帶就沿用原本的圖;\r\n帶了新圖的話,舊圖會在存檔成功後從 S3 刪除。",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "id",
+                  "title"
+                ],
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "description": "要編輯的輪播圖 Id",
+                    "format": "uuid"
+                  },
+                  "picture": {
+                    "type": "string",
+                    "description": "新的圖片檔;不換圖就不要帶,沿用原本的圖",
+                    "format": "binary"
+                  },
+                  "title": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "標題(最多 50 字)"
+                  },
+                  "url": {
+                    "maxLength": 50,
+                    "type": "string",
+                    "description": "點擊後導向的連結(最多 50 字,可空)"
+                  },
+                  "status": {
+                    "type": "boolean",
+                    "description": "是否啟用顯示"
+                  }
+                }
+              },
+              "encoding": {
+                "id": {
+                  "style": "form"
+                },
+                "picture": {
+                  "style": "form"
+                },
+                "title": {
+                  "style": "form"
+                },
+                "url": {
+                  "style": "form"
+                },
+                "status": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功,data 為編輯後的資料",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomeCarouselResponseData"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "欄位未填、圖片格式不支援或超過大小限制",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "找不到該輪播圖",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Response"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/Carousel/SearchCarouselPictures": {
       "get": {
         "tags": [
