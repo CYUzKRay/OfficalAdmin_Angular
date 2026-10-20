@@ -123,15 +123,19 @@ export class PreviewEffectComponent implements OnChanges, AfterViewInit, OnDestr
     <div class="container hero-in">
       <div class="hero-copy">
         <span class="hero-eyebrow is-in" data-reveal>Taiwan Coated Abrasives</span>
-        <h1 class="hero-title is-in" data-reveal>專業研磨材料供應<br />砂帶客製加工服務</h1>
+        <h1 class="hero-title is-in" data-reveal>砂布供應與<br />砂布環帶客製加工</h1>
         <div class="grit-rule hero-rule is-in" data-reveal role="presentation"></div>
         <p class="hero-lead is-in" data-reveal>
-          深耕研磨材料三十餘年，整合國際品牌砂布、砂紙與自廠加工能力，依工件材質、設備規格及表面要求，提供合適的研磨材料與客製砂帶，滿足金屬加工、航太製造及各式工業研磨需求。
+          航泰創立於 1990 年，代理日本 NCA 野牛牌砂布，並提供 HT、SAIL 品牌研磨材料與自廠砂帶加工服務。依工件材質、設備尺寸及表面要求，協助選配適合的磨料、布基與番號，滿足金屬研磨、去毛邊及表面拉絲需求。
         </p>
         <div class="hero-actions is-in" data-reveal>
           <a class="btn btn-primary" href="#">瀏覽產品目錄</a>
           <a class="btn btn-ghost" href="#">聯絡報價</a>
         </div>
+        <nav class="hero-links is-in" data-reveal>
+          <a href="#">砂布環帶客製加工</a>
+          <a href="#">日本 NCA 野牛牌砂布</a>
+        </nav>
       </div>
       <div class="hero-stage">
         <figure class="carousel" aria-roledescription="輪播" aria-label="形象輪播圖">
