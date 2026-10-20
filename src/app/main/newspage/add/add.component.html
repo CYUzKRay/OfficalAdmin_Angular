@@ -42,6 +42,7 @@
                 <option value="產品資訊" selected>產品資訊</option>
                 <option value="活動通知">活動通知</option>
                 <option value="媒體報導">媒體報導</option>
+                <option value="研磨知識">研磨知識</option>
               </select>
             </div>
 
@@ -61,6 +62,20 @@
           </div>
 
           <div class="form-row">
+            <div class="form-group col-8">
+              <label for="newsSeoTitle">SEO 標題</label>
+              <input
+                type="text"
+                id="newsSeoTitle"
+                name="seoTitle"
+                maxlength="100"
+                placeholder="官網內頁的瀏覽器標題(選填),沒填時用「標題|最新消息|公司名」"
+                [(ngModel)]="uploadata.seoTitle"
+              />
+            </div>
+          </div>
+
+          <div class="form-row">
             <div class="form-group col-4">
               <label for="publishDate">發布日期</label>
               <input
@@ -70,6 +85,17 @@
                 [(ngModel)]="uploadata.date"
               />
               <div class="form-help">留空將使用當前日期</div>
+            </div>
+
+            <div class="form-group col-4">
+              <label for="updatedDate">更新日期</label>
+              <input
+                type="date"
+                id="updatedDate"
+                name="updated_date"
+                [(ngModel)]="uploadata.updatedDate"
+              />
+              <div class="form-help">內容有實質修改時才填;改錯字不用填。官網會顯示「更新於」</div>
             </div>
 
             <div class="form-group col-4">

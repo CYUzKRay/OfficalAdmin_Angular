@@ -33,6 +33,16 @@ export interface NewModel {
   newContent: string;
 
   /**
+   * 官網內頁 title 覆寫(最多 100 字,可空)
+   */
+  seoTitle?: string | null;
+
+  /**
+   * 更新日期(可空)。內容有實質修改時才手動填寫,存檔不會自動更新
+   */
+  updatedDate?: string | null;
+
+  /**
    * 內頁底部的推薦產品 Id,**陣列順序就是顯示順序**。整份替換:不帶或空陣列等於全部移除。
    */
   productIds?: Array<string> | null;

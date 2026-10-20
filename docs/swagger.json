@@ -3823,6 +3823,18 @@
             "description": "列表頁顯示的簡介(最多 100 字,可空)",
             "nullable": true
           },
+          "seoTitle": {
+            "maxLength": 100,
+            "type": "string",
+            "description": "官網內頁 title 覆寫(最多 100 字,可空)。沒填時由產生器組「標題|最新消息|公司名」",
+            "nullable": true
+          },
+          "updatedDate": {
+            "type": "string",
+            "description": "更新日期(可空)。**內容有實質修改時才手動填寫**,存檔不會自動更新;\r\n官網顯示「更新於」並輸出 dateModified",
+            "format": "date-time",
+            "nullable": true
+          },
           "productIds": {
             "type": "array",
             "items": {
@@ -3878,6 +3890,17 @@
             "minLength": 0,
             "type": "string",
             "nullable": true
+          },
+          "seo_title": {
+            "maxLength": 100,
+            "minLength": 0,
+            "type": "string",
+            "nullable": true
+          },
+          "updated_date": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -3917,6 +3940,16 @@
           "introduction": {
             "type": "string",
             "description": "列表頁簡介(可能為 null)",
+            "nullable": true
+          },
+          "seoTitle": {
+            "type": "string",
+            "description": "官網內頁 title 覆寫(可能為 null)",
+            "nullable": true
+          },
+          "updatedDate": {
+            "type": "string",
+            "description": "更新日期,格式 yyyy-MM-dd(沒填時為 null)",
             "nullable": true
           },
           "products": {

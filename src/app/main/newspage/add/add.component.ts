@@ -26,6 +26,8 @@ export class AddComponent {
     date: new Date().toISOString(),
     status: true,
     newContent: '',
+    seoTitle: '',
+    updatedDate: '',
   };
   editId: string = '';
 
@@ -63,6 +65,8 @@ export class AddComponent {
               : new Date().toISOString();
             this.uploadata.status = newsData.data?.status ?? true;
             this.uploadata.introduction = newsData.data?.introduction ?? '';
+            this.uploadata.seoTitle = newsData.data?.seoTitle ?? '';
+            this.uploadata.updatedDate = newsData.data?.updatedDate ?? '';
             this.gethtml = newsData.data?.newContent ?? '';
             this.uploadata.newContent = newsData.data?.newContent ?? '';
             this.uploadata.id = this.editId;
@@ -111,6 +115,8 @@ export class AddComponent {
     const postData = {
       ...this.uploadata,
       id: this.uploadata.id || null,
+      // 日期欄位清空時是空字串,API 的 DateTime? 收不了空字串,要轉成 null
+      updatedDate: this.uploadata.updatedDate || null,
       productIds: this.recommendedProducts
         .map((p) => p.productId)
         .filter((id): id is string => !!id),

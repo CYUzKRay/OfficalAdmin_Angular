@@ -29,6 +29,16 @@ export interface NewsModel {
   introduction?: string | null;
 
   /**
+   * 官網內頁 title 覆寫(可能為 null)
+   */
+  seoTitle?: string | null;
+
+  /**
+   * 更新日期,格式 yyyy-MM-dd(沒填時為 null)
+   */
+  updatedDate?: string | null;
+
+  /**
    * 消息內文(HTML 字串)
    */
   newContent?: string | null;
