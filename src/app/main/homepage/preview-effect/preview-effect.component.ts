@@ -135,6 +135,7 @@ export class PreviewEffectComponent implements OnChanges, AfterViewInit, OnDestr
         <nav class="hero-links is-in" data-reveal>
           <a href="#">砂布環帶客製加工</a>
           <a href="#">日本 NCA 野牛牌砂布</a>
+          <a href="#">砂布與砂紙有什麼差別</a>
         </nav>
       </div>
       <div class="hero-stage">
